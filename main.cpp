@@ -16,6 +16,7 @@
 #include "NamePool.hpp"
 #include "TeamGenerator.hpp"
 
+// YOUR ORIGINAL WAGE LOGIC
 void generateInitialWageContracts(Team& team) {
     for (auto& p : team.players) {
         int base = 5000;
@@ -26,234 +27,139 @@ void generateInitialWageContracts(Team& team) {
         else if (p.overall >= 60) base = 12000;
         else if (p.overall >= 55) base = 6000;
         else if (p.overall >= 50) base = 3000;
+        
         if (p.age <= 19) base = static_cast<int>(base * 0.5);
         else if (p.age >= 32) base = static_cast<int>(base * 0.8);
-        int wage = static_cast<int>(base * randDouble(0.85, 1.15));
+        
+        int wage = static_cast<int>(base * randDouble(0.9, 1.1));
         team.finances.contracts[p.uniqueId] = {p.uniqueId, p.name, wage, "2028-06-30", false};
     }
-    for (auto& p : team.youthPlayers) {
-        int base = 1500;
-        if (p.overall >= 65) base = 6000;
-        if (p.overall >= 70) base = 12000;
-        int wage = static_cast<int>(base * randDouble(0.8, 1.1));
-        team.finances.contracts[p.uniqueId] = {p.uniqueId, p.name, wage, "2028-06-30", true};
-    }
 }
 
-void processWeeklyFinances(Team& team) {
-    int totalWages = team.finances.getTotalWeeklyWages();
-    team.finances.balance -= totalWages;
-    team.finances.wageExpenses += totalWages;
-    int sponsorship = 50000;
-    if (team.finances.balance > 100000000) sponsorship = 500000;
-    team.finances.balance += sponsorship;
-    team.finances.sponsorshipIncome += sponsorship;
-}
-
-void processMatchdayFinances(Team& team, bool isHome) {
-    if (!isHome) return;
-    int income = 200000;
-    if (team.finances.balance > 50000000) income = 500000;
-    team.finances.balance += income;
-    team.finances.matchdayIncome += income;
+void processWeeklyFinances(Team* team) {
+    int totalWages = team->finances.getTotalWeeklyWages();
+    team->finances.balance -= totalWages;
+    team->finances.wageExpenses += totalWages;
 }
 
 int main() {
-    std::cout << "=== FOOTBALL MANAGER C++ ===\n" << std::endl;
-    
-    // Load name pool
-    NamePool namePool;
-    if (!namePool.loadFromJson("countries_data.json")) {
-        std::cerr << "Failed to load names. Exiting.\n";
-        return 1;
-    }
-    
-    // Load world data (leagues and teams with levels)
+    // 1. DATA LOADING
     WorldData worldData;
-    if (!worldData.loadFromJson("world_data.json")) {
-        std::cerr << "Failed to load world data. Exiting.\n";
-        return 1;
-    }
-    
-    // Generate all teams using TeamGenerator
+    if (!worldData.loadFromJson("world_data.json")) return 1;
+    NamePool namePool;
+    if (!namePool.loadFromJson("countries_data.json")) return 1;
     TeamGenerator generator(namePool);
-    std::vector<Team> teams;
+    TransferEngine transferEngine;
+    GameCalendar calendar;
+    std::vector<League> allLeagues;
+
+    // 2. WORLD GENERATION
+    std::cout << "--- Initializing Football World ---" << std::endl;
+    auto countries = worldData.getAllCountries();
+    for (auto const& [countryName, countryData] : countries) {
+        for (auto const& lInfo : countryData.leagues) {
+            League league(lInfo.name);
+            for (auto const& tInfo : lInfo.teams) {
+                Team temp = generator.generateTeam(tInfo.name, countryName, tInfo.level);
+                Team* newTeam = new Team(temp.name, temp.country, temp.level, temp.finances.balance);
+                newTeam->players = temp.players;
+                newTeam->youthPlayers = temp.youthPlayers;
+                generateInitialWageContracts(*newTeam);
+                league.addTeam(newTeam);
+            }
+            league.generateSchedule("2025-08-01");
+            allLeagues.push_back(std::move(league));
+        }
+    }
+    std::cout << "Total Leagues Generated: " << allLeagues.size() << std::endl;
+
+    // 3. TEAM SELECTION
+    std::cout << "\n=== FOOTBALL MANAGER C++ ===\n";
+    std::cout << "Select a League:\n";
+    for (size_t i = 0; i < allLeagues.size(); ++i) 
+        std::cout << i + 1 << ". " << allLeagues[i].name << "\n";
     
-    for (const auto& [countryName, countryData] : worldData.getAllCountries()) {
-        for (const auto& league : countryData.leagues) {
-            for (const auto& teamInfo : league.teams) {
-                Team team = generator.generateTeam(teamInfo.name, countryName, teamInfo.level);
-                generateInitialWageContracts(team);
-                teams.push_back(team);
-                std::cout << "Generated: " << team.name << " (Level " << team.level << ")\n";
+    int lIdx; std::cin >> lIdx;
+    League* managedLeague = &allLeagues[lIdx - 1];
+
+    std::cout << "\nSelect your Club in " << managedLeague->name << ":\n";
+    for (size_t i = 0; i < managedLeague->teams.size(); ++i)
+        std::cout << i + 1 << ". " << managedLeague->teams[i]->name << "\n";
+    
+    int tIdx; std::cin >> tIdx;
+    Team* managedTeam = managedLeague->teams[tIdx - 1];
+
+    // 4. MAIN GAME LOOP
+    bool running = true;
+    while (running) {
+        std::string today = calendar.getDateString();
+        std::cout << "\n========================================";
+        std::cout << "\n DATE: " << today << " | " << managedTeam->name;
+        std::cout << "\n========================================\n";
+
+        // Check if managed team plays today
+        bool matchToday = false;
+        if (managedLeague->fixtures.count(today)) {
+            for (auto& m : managedLeague->fixtures[today]) {
+                if (m.homeTeam == managedTeam || m.awayTeam == managedTeam) matchToday = true;
             }
         }
-    }
-    
-    std::cout << "\nGenerated " << teams.size() << " teams.\n";
-    
-    // Create a sample league (Premier League) for the UI – you can expand this
-    League premierLeague("Premier League");
-    for (auto& team : teams) {
-        if (team.country == "England" && team.level >= 15) {
-            premierLeague.addTeam(&team);
-        }
-    }
-    
-    GameCalendar calendar;
-    TransferEngine transferEngine;
-    
-    bool running = true;
-    int matchdayCounter = 1;
-    
-    // Simple main loop – you can select a managed team later
-    Team* managedTeam = nullptr;
-    if (!teams.empty()) {
-        managedTeam = &teams[0]; // Just pick first team for demo
-        std::cout << "\nManaged club automatically set to: " << managedTeam->name << "\n";
-    }
-    
-    while (running) {
-        std::cout << "\n--- Date: " << calendar.getDateString() << " ---\n";
-        std::cout << "Transfer Window: " << (calendar.isTransferWindowOpen() ? "OPEN" : "CLOSED") << "\n";
-        std::cout << "1. View League Table\n";
-        std::cout << "2. View Team Squads\n";
-        std::cout << "3. Simulate Matchday\n";
+
+        std::cout << "1. " << (matchToday ? "** PLAY MATCH **" : "Advance One Day") << "\n";
+        std::cout << "2. View League Table\n";
+        std::cout << "3. View Team Squad\n";
         std::cout << "4. Transfer Market\n";
         std::cout << "5. My Club Finances\n";
-        std::cout << "6. Advance One Day\n";
-        std::cout << "7. Exit\n";
+        std::cout << "6. Exit Game\n";
         std::cout << "Choice: ";
-        
+
         int choice;
-        std::cin >> choice;
-        std::cin.ignore();
-        
+        if (!(std::cin >> choice)) break;
+
         switch (choice) {
-            case 1:
-                premierLeague.printTable();
-                break;
-                
-            case 2:
-                for (auto& team : teams) {
-                    std::cout << "\n=== " << team.name << " ===\n";
-                    for (const auto& p : team.players) {
-                        std::cout << "  " << p.shortInfo() << "\n";
-                    }
-                }
-                break;
-                
-            case 3: {
-                std::cout << "\n--- Matchday " << matchdayCounter++ << " Results ---\n";
-                // Simulate a few random matches from the premier league
-                auto tableTeams = premierLeague.getSortedTable();
-                if (tableTeams.size() >= 2) {
-                    for (size_t i = 0; i < tableTeams.size(); i += 2) {
-                        if (i + 1 < tableTeams.size()) {
-                            auto result = MatchEngine::simulateMatch(*tableTeams[i], *tableTeams[i+1]);
-                            std::cout << result.homeTeam->name << " " << result.homeGoals << " - " << result.awayGoals << " " << result.awayTeam->name << "\n";
-                            processMatchdayFinances(*result.homeTeam, true);
-                            processMatchdayFinances(*result.awayTeam, false);
+            case 1: {
+                // Simulate all matches for the whole world scheduled for today
+                for (auto& league : allLeagues) {
+                    if (league.fixtures.count(today)) {
+                        for (auto& m : league.fixtures[today]) {
+                            MatchResult res = MatchEngine::simulateMatch(*m.homeTeam, *m.awayTeam);
+                            if (m.homeTeam == managedTeam || m.awayTeam == managedTeam) {
+                                std::cout << "\n[FINAL RESULT] " << m.homeTeam->name << " " << res.homeGoals 
+                                          << " - " << res.awayGoals << " " << m.awayTeam->name << "\n";
+                            }
                         }
                     }
                 }
-                break;
-            }
-            
-            case 4: {
-                std::cout << "\n=== TRANSFER MARKET ===\n";
-                auto listings = transferEngine.getAvailableListings();
-                if (listings.empty()) {
-                    std::cout << "No players listed.\n";
-                } else {
-                    for (size_t i = 0; i < listings.size(); i++) {
-                        const auto& l = listings[i];
-                        std::cout << i+1 << ". " << l.playerName << " (" << l.position << ") - " << l.currentClub
-                                  << " | Asking: $" << l.askingPrice << " | Wage: $" << l.weeklyWage << "/week\n";
-                    }
-                    if (managedTeam) {
-                        std::cout << "Enter number to bid (0 to cancel): ";
-                        int bidChoice;
-                        std::cin >> bidChoice;
-                        if (bidChoice > 0 && bidChoice <= (int)listings.size()) {
-                            const auto& l = listings[bidChoice-1];
-                            std::cout << "Enter bid amount: ";
-                            int amount;
-                            std::cin >> amount;
-                            std::cout << "Enter wage offer: ";
-                            int wage;
-                            std::cin >> wage;
-                            transferEngine.submitBid(l.playerId, managedTeam->name, amount, wage, calendar.getDateString());
-                            std::cout << "Bid submitted.\n";
-                        }
-                    }
-                }
-                if (managedTeam) {
-                    std::cout << "\nList a player? (y/n): ";
-                    char listChoice;
-                    std::cin >> listChoice;
-                    if (listChoice == 'y') {
-                        std::cout << "Enter player name: ";
-                        std::string pname;
-                        std::cin.ignore();
-                        std::getline(std::cin, pname);
-                        Player* p = managedTeam->findPlayer(pname);
-                        if (p) {
-                            std::cout << "Asking price: ";
-                            int price;
-                            std::cin >> price;
-                            int wage = 5000;
-                            auto it = managedTeam->finances.contracts.find(p->uniqueId);
-                            if (it != managedTeam->finances.contracts.end()) wage = it->second.weeklyWage;
-                            transferEngine.listPlayerForTransfer(p, managedTeam->name, price, calendar.getDateString(), wage);
-                            std::cout << p->name << " listed for transfer.\n";
-                        } else {
-                            std::cout << "Player not found.\n";
-                        }
-                    }
-                }
-                break;
-            }
-            
-            case 5: {
-                if (managedTeam) {
-                    auto& fin = managedTeam->finances;
-                    std::cout << "\n=== " << managedTeam->name << " Finances ===\n";
-                    std::cout << "Balance: $" << fin.balance << "\n";
-                    std::cout << "Transfer Budget: $" << fin.transferBudget << "\n";
-                    std::cout << "Wage Budget: $" << fin.wageBudget << "/week\n";
-                    std::cout << "Current Wages: $" << fin.getTotalWeeklyWages() << "/week\n";
-                } else {
-                    std::cout << "No managed club selected.\n";
-                }
-                break;
-            }
-            
-            case 6: {
                 calendar.advanceOneDay();
                 if (calendar.isSunday()) {
-                    for (auto& team : teams) processWeeklyFinances(team);
+                    for (auto& l : allLeagues) {
+                        for (auto* t : l.teams) processWeeklyFinances(t);
+                    }
                 }
-                if (calendar.isTransferWindowOpen()) {
-                    transferEngine.processAIActivity(teams, calendar.getDateString());
-                }
-                std::cout << "Advanced to " << calendar.getDateString() << "\n";
                 break;
             }
-            
-            case 7:
-                running = false;
+            case 2: managedLeague->printTable(); break;
+            case 3:
+                std::cout << "\n--- Squad List ---\n";
+                for (auto& p : managedTeam->players) std::cout << p.shortInfo() << "\n";
                 break;
-                
-            default:
-                std::cout << "Invalid choice.\n";
+            case 4:
+                std::cout << "\nTotal players on market: " << transferEngine.getAvailableListings().size() << "\n";
+                break;
+            case 5:
+                std::cout << "\nBalance: $" << managedTeam->finances.balance;
+                std::cout << "\nWeekly Wages: $" << managedTeam->finances.getTotalWeeklyWages() << "\n";
+                break;
+            case 6: running = false; break;
         }
-        
         std::cout << "\nPress Enter to continue...";
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cin.get();
     }
-    
-    std::cout << "Thanks for playing!\n";
+
+    // Cleanup
+    for (auto& l : allLeagues) {
+        for (auto* t : l.teams) delete t;
+    }
     return 0;
 }
