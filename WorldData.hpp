@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <nlohmann/json.hpp>
+#include "json.hpp" // <-- Changed to look in the current folder!
 
 struct TeamInfo {
     std::string name;

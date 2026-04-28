@@ -9,6 +9,7 @@ public:
     int age;
     std::string nationality;
     std::string position;
+    std::string positionRole; // <-- We added this line!
     int overall;
     int potential;
     
