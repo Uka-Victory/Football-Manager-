@@ -1,0 +1,1001 @@
+{
+  "England": {
+    "leagues": [
+      {
+        "name": "Premier League",
+        "level": 1,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Arsenal", "level": 19 },
+          { "name": "Aston Villa", "level": 15 },
+          { "name": "Bournemouth", "level": 12 },
+          { "name": "Brentford", "level": 13 },
+          { "name": "Brighton & Hove Albion", "level": 14 },
+          { "name": "Chelsea", "level": 20 },
+          { "name": "Crystal Palace", "level": 12 },
+          { "name": "Everton", "level": 14 },
+          { "name": "Fulham", "level": 12 },
+          { "name": "Liverpool", "level": 19 },
+          { "name": "Luton Town", "level": 9 },
+          { "name": "Manchester City", "level": 20 },
+          { "name": "Manchester United", "level": 18 },
+          { "name": "Newcastle United", "level": 17 },
+          { "name": "Nottingham Forest", "level": 11 },
+          { "name": "Sheffield United", "level": 10 },
+          { "name": "Tottenham Hotspur", "level": 17 },
+          { "name": "West Ham United", "level": 15 },
+          { "name": "Wolverhampton Wanderers", "level": 13 },
+          { "name": "Southampton", "level": 11 }
+        ]
+      },
+      {
+        "name": "Championship",
+        "level": 2,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Birmingham City", "level": 10 },
+          { "name": "Blackburn Rovers", "level": 10 },
+          { "name": "Blackpool", "level": 9 },
+          { "name": "Bristol City", "level": 10 },
+          { "name": "Cardiff City", "level": 10 },
+          { "name": "Coventry City", "level": 10 },
+          { "name": "Derby County", "level": 9 },
+          { "name": "Huddersfield Town", "level": 9 },
+          { "name": "Hull City", "level": 9 },
+          { "name": "Ipswich Town", "level": 10 },
+          { "name": "Leeds United", "level": 13 },
+          { "name": "Leicester City", "level": 14 },
+          { "name": "Middlesbrough", "level": 11 },
+          { "name": "Millwall", "level": 9 },
+          { "name": "Norwich City", "level": 11 },
+          { "name": "Preston North End", "level": 9 },
+          { "name": "Queens Park Rangers", "level": 9 },
+          { "name": "Reading", "level": 9 },
+          { "name": "Rotherham United", "level": 8 },
+          { "name": "Sheffield Wednesday", "level": 10 },
+          { "name": "Stoke City", "level": 10 },
+          { "name": "Sunderland", "level": 10 },
+          { "name": "Swansea City", "level": 10 },
+          { "name": "Watford", "level": 11 }
+        ]
+      },
+      {
+        "name": "League One",
+        "level": 3,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Barnsley", "level": 8 },
+          { "name": "Bolton Wanderers", "level": 8 },
+          { "name": "Bristol Rovers", "level": 7 },
+          { "name": "Burton Albion", "level": 6 },
+          { "name": "Fleetwood Town", "level": 6 },
+          { "name": "Plymouth Argyle", "level": 8 },
+          { "name": "Shrewsbury Town", "level": 6 },
+          { "name": "Wycombe Wanderers", "level": 7 },
+          { "name": "Accrington Stanley", "level": 5 },
+          { "name": "Cambridge United", "level": 6 },
+          { "name": "Lincoln City", "level": 7 },
+          { "name": "Doncaster Rovers", "level": 6 },
+          { "name": "Wigan Athletic", "level": 7 },
+          { "name": "Portsmouth", "level": 8 },
+          { "name": "Charlton Athletic", "level": 8 },
+          { "name": "Milton Keynes Dons", "level": 7 },
+          { "name": "Oxford United", "level": 7 },
+          { "name": "Peterborough United", "level": 7 },
+          { "name": "Blackpool", "level": 9 },
+          { "name": "Gillingham", "level": 6 },
+          { "name": "Northampton Town", "level": 6 },
+          { "name": "Morecambe", "level": 5 },
+          { "name": "Cheltenham Town", "level": 5 },
+          { "name": "Crewe Alexandra", "level": 5 }
+        ]
+      }
+    ]
+  },
+  "Spain": {
+    "leagues": [
+      {
+        "name": "La Liga 1",
+        "level": 1,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Real Madrid", "level": 20 },
+          { "name": "FC Barcelona", "level": 20 },
+          { "name": "Atlético Madrid", "level": 19 },
+          { "name": "Sevilla", "level": 18 },
+          { "name": "Real Betis", "level": 16 },
+          { "name": "Valencia", "level": 15 },
+          { "name": "Villarreal", "level": 17 },
+          { "name": "Real Sociedad", "level": 17 },
+          { "name": "Athletic Club", "level": 16 },
+          { "name": "Celta Vigo", "level": 14 },
+          { "name": "Getafe", "level": 13 },
+          { "name": "Espanyol", "level": 12 },
+          { "name": "Rayo Vallecano", "level": 12 },
+          { "name": "Mallorca", "level": 11 },
+          { "name": "Alavés", "level": 11 },
+          { "name": "Osasuna", "level": 12 },
+          { "name": "Girona", "level": 13 },
+          { "name": "Las Palmas", "level": 10 },
+          { "name": "Cádiz", "level": 10 },
+          { "name": "Granada", "level": 10 }
+        ]
+      },
+      {
+        "name": "La Liga 2",
+        "level": 2,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Real Zaragoza", "level": 10 },
+          { "name": "Sporting Gijón", "level": 10 },
+          { "name": "Málaga", "level": 10 },
+          { "name": "Lugo", "level": 8 },
+          { "name": "Tenerife", "level": 9 },
+          { "name": "Almería", "level": 11 },
+          { "name": "Ponferradina", "level": 8 },
+          { "name": "Mirandés", "level": 8 },
+          { "name": "Eibar", "level": 10 },
+          { "name": "Ibiza", "level": 7 },
+          { "name": "Leganés", "level": 9 },
+          { "name": "Valladolid", "level": 10 },
+          { "name": "Oviedo", "level": 9 },
+          { "name": "Cartagena", "level": 8 },
+          { "name": "Burgos", "level": 7 },
+          { "name": "Fuenlabrada", "level": 7 },
+          { "name": "Andorra", "level": 7 },
+          { "name": "Albacete", "level": 8 },
+          { "name": "Huesca", "level": 9 },
+          { "name": "Sabadell", "level": 7 },
+          { "name": "Amorebieta", "level": 6 },
+          { "name": "Girona B", "level": 5 }
+        ]
+      },
+      {
+        "name": "La Liga 3",
+        "level": 3,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Barcelona B", "level": 8 },
+          { "name": "Real Madrid Castilla", "level": 8 },
+          { "name": "Atlético Madrid B", "level": 7 },
+          { "name": "Valencia B", "level": 6 },
+          { "name": "Villarreal B", "level": 7 },
+          { "name": "Sevilla Atlético", "level": 6 },
+          { "name": "Celta B", "level": 6 },
+          { "name": "Deportivo La Coruña", "level": 9 },
+          { "name": "Mallorca B", "level": 5 },
+          { "name": "Osasuna B", "level": 5 },
+          { "name": "Athletic Bilbao B", "level": 6 },
+          { "name": "Granada B", "level": 5 },
+          { "name": "Almería B", "level": 5 },
+          { "name": "Zaragoza B", "level": 5 },
+          { "name": "Tenerife B", "level": 5 },
+          { "name": "Sporting B", "level": 5 },
+          { "name": "Mirandés B", "level": 5 },
+          { "name": "Eibar B", "level": 5 },
+          { "name": "Castellón", "level": 7 },
+          { "name": "Hércules", "level": 6 },
+          { "name": "Racing Santander", "level": 7 },
+          { "name": "Cultural Leonesa", "level": 6 }
+        ]
+      }
+    ]
+  },
+  "Italy": {
+    "leagues": [
+      {
+        "name": "Serie A",
+        "level": 1,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Juventus", "level": 19 },
+          { "name": "AC Milan", "level": 19 },
+          { "name": "Inter Milan", "level": 19 },
+          { "name": "Napoli", "level": 19 },
+          { "name": "Roma", "level": 18 },
+          { "name": "Lazio", "level": 17 },
+          { "name": "Atalanta", "level": 18 },
+          { "name": "Fiorentina", "level": 16 },
+          { "name": "Torino", "level": 14 },
+          { "name": "Bologna", "level": 14 },
+          { "name": "Sassuolo", "level": 13 },
+          { "name": "Sampdoria", "level": 12 },
+          { "name": "Udinese", "level": 12 },
+          { "name": "Empoli", "level": 11 },
+          { "name": "Monza", "level": 11 },
+          { "name": "Lecce", "level": 10 },
+          { "name": "Salernitana", "level": 10 },
+          { "name": "Cremonese", "level": 9 },
+          { "name": "Spezia", "level": 9 },
+          { "name": "Verona", "level": 10 }
+        ]
+      },
+      {
+        "name": "Serie B",
+        "level": 2,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Palermo", "level": 11 },
+          { "name": "Pisa", "level": 9 },
+          { "name": "Benevento", "level": 10 },
+          { "name": "Cagliari", "level": 11 },
+          { "name": "Parma", "level": 11 },
+          { "name": "Frosinone", "level": 10 },
+          { "name": "Reggina", "level": 9 },
+          { "name": "Perugia", "level": 9 },
+          { "name": "Como", "level": 8 },
+          { "name": "Modena", "level": 8 },
+          { "name": "Brescia", "level": 9 },
+          { "name": "Cosenza", "level": 8 },
+          { "name": "Ascoli", "level": 8 },
+          { "name": "Ternana", "level": 8 },
+          { "name": "SPAL", "level": 9 },
+          { "name": "Vicenza", "level": 8 },
+          { "name": "Südtirol", "level": 7 },
+          { "name": "Catanzaro", "level": 8 },
+          { "name": "Cittadella", "level": 8 },
+          { "name": "Bari", "level": 10 }
+        ]
+      },
+      {
+        "name": "Serie C",
+        "level": 3,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Avellino", "level": 7 },
+          { "name": "Carrarese", "level": 6 },
+          { "name": "Padova", "level": 7 },
+          { "name": "Pescara", "level": 7 },
+          { "name": "Triestina", "level": 6 },
+          { "name": "Cesena", "level": 7 },
+          { "name": "Monopoli", "level": 6 },
+          { "name": "Feralpisalò", "level": 6 },
+          { "name": "Pontedera", "level": 5 },
+          { "name": "Pro Vercelli", "level": 6 },
+          { "name": "Renate", "level": 5 },
+          { "name": "Virtus Entella", "level": 7 },
+          { "name": "Gubbio", "level": 5 },
+          { "name": "Lucchese", "level": 6 },
+          { "name": "Siena", "level": 6 },
+          { "name": "AlbinoLeffe", "level": 5 },
+          { "name": "Mantova", "level": 6 },
+          { "name": "Reggiana", "level": 7 },
+          { "name": "Ancona", "level": 6 },
+          { "name": "Imolese", "level": 5 }
+        ]
+      }
+    ]
+  },
+  "Germany": {
+    "leagues": [
+      {
+        "name": "Bundesliga 1",
+        "level": 1,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Bayern Munich", "level": 20 },
+          { "name": "Borussia Dortmund", "level": 19 },
+          { "name": "Bayer Leverkusen", "level": 19 },
+          { "name": "RB Leipzig", "level": 18 },
+          { "name": "Eintracht Frankfurt", "level": 17 },
+          { "name": "VfL Wolfsburg", "level": 15 },
+          { "name": "Borussia Mönchengladbach", "level": 16 },
+          { "name": "1. FC Köln", "level": 14 },
+          { "name": "TSG Hoffenheim", "level": 14 },
+          { "name": "SC Freiburg", "level": 15 },
+          { "name": "Mainz 05", "level": 13 },
+          { "name": "VfB Stuttgart", "level": 14 },
+          { "name": "Werder Bremen", "level": 14 },
+          { "name": "FC Augsburg", "level": 12 },
+          { "name": "VfL Bochum", "level": 11 },
+          { "name": "Union Berlin", "level": 15 },
+          { "name": "FC Schalke 04", "level": 12 },
+          { "name": "1. FC Nürnberg", "level": 11 }
+        ]
+      },
+      {
+        "name": "Bundesliga 2",
+        "level": 2,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Hamburger SV", "level": 12 },
+          { "name": "Fortuna Düsseldorf", "level": 11 },
+          { "name": "Hannover 96", "level": 10 },
+          { "name": "Karlsruher SC", "level": 9 },
+          { "name": "Holstein Kiel", "level": 9 },
+          { "name": "Greuther Fürth", "level": 9 },
+          { "name": "Erzgebirge Aue", "level": 8 },
+          { "name": "1. FC Heidenheim", "level": 9 },
+          { "name": "Hansa Rostock", "level": 8 },
+          { "name": "Jahn Regensburg", "level": 8 },
+          { "name": "SV Sandhausen", "level": 8 },
+          { "name": "SV Darmstadt", "level": 9 },
+          { "name": "VfL Osnabrück", "level": 8 },
+          { "name": "Eintracht Braunschweig", "level": 8 },
+          { "name": "St. Pauli", "level": 9 },
+          { "name": "1. FC Magdeburg", "level": 8 },
+          { "name": "FC Ingolstadt", "level": 8 },
+          { "name": "Dynamo Dresden", "level": 9 }
+        ]
+      },
+      {
+        "name": "Bundesliga 3",
+        "level": 3,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Wehen Wiesbaden", "level": 7 },
+          { "name": "FSV Zwickau", "level": 6 },
+          { "name": "VfB Lübeck", "level": 6 },
+          { "name": "Viktoria Köln", "level": 6 },
+          { "name": "MSV Duisburg", "level": 6 },
+          { "name": "1860 Munich", "level": 7 },
+          { "name": "Hallescher FC", "level": 6 },
+          { "name": "1. FC Saarbrücken", "level": 7 },
+          { "name": "SpVgg Bayreuth", "level": 5 },
+          { "name": "SC Verl", "level": 5 },
+          { "name": "Rot-Weiß Essen", "level": 6 },
+          { "name": "Erzgebirge Aue", "level": 8 },
+          { "name": "Preußen Münster", "level": 6 },
+          { "name": "Waldhof Mannheim", "level": 6 },
+          { "name": "Dynamo Berlin", "level": 6 },
+          { "name": "Unterhaching", "level": 6 },
+          { "name": "Carl Zeiss Jena", "level": 5 },
+          { "name": "Würzburger Kickers", "level": 5 }
+        ]
+      }
+    ]
+  },
+  "France": {
+    "leagues": [
+      {
+        "name": "Ligue 1",
+        "level": 1,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Paris Saint-Germain", "level": 20 },
+          { "name": "Marseille", "level": 18 },
+          { "name": "Lyon", "level": 17 },
+          { "name": "Monaco", "level": 18 },
+          { "name": "Lille", "level": 17 },
+          { "name": "Rennes", "level": 16 },
+          { "name": "Nice", "level": 16 },
+          { "name": "Montpellier", "level": 14 },
+          { "name": "Strasbourg", "level": 13 },
+          { "name": "Lens", "level": 15 },
+          { "name": "Nantes", "level": 13 },
+          { "name": "Reims", "level": 12 },
+          { "name": "Brest", "level": 11 },
+          { "name": "Angers", "level": 11 },
+          { "name": "Lorient", "level": 11 },
+          { "name": "Clermont", "level": 10 },
+          { "name": "Troyes", "level": 10 },
+          { "name": "Auxerre", "level": 10 },
+          { "name": "Ajaccio", "level": 9 },
+          { "name": "Toulouse", "level": 11 }
+        ]
+      },
+      {
+        "name": "Ligue 2",
+        "level": 2,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Sochaux", "level": 9 },
+          { "name": "Grenoble", "level": 8 },
+          { "name": "Amiens", "level": 9 },
+          { "name": "Caen", "level": 9 },
+          { "name": "Guingamp", "level": 9 },
+          { "name": "Dijon", "level": 9 },
+          { "name": "Le Havre", "level": 9 },
+          { "name": "Pau", "level": 7 },
+          { "name": "Niort", "level": 7 },
+          { "name": "Valenciennes", "level": 8 },
+          { "name": "Quevilly", "level": 7 },
+          { "name": "Rodez", "level": 7 },
+          { "name": "Nancy", "level": 8 },
+          { "name": "Bastia", "level": 8 },
+          { "name": "Châteauroux", "level": 7 },
+          { "name": "Saint-Étienne", "level": 10 },
+          { "name": "Metz", "level": 10 },
+          { "name": "Bordeaux", "level": 10 },
+          { "name": "Paris FC", "level": 8 },
+          { "name": "Laval", "level": 7 }
+        ]
+      },
+      {
+        "name": "Ligue 3",
+        "level": 3,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Toulon", "level": 7 },
+          { "name": "Bourg-en-Bresse", "level": 6 },
+          { "name": "Sedan", "level": 6 },
+          { "name": "Sète", "level": 5 },
+          { "name": "Chambly", "level": 5 },
+          { "name": "Villefranche", "level": 5 },
+          { "name": "Concarneau", "level": 6 },
+          { "name": "Créteil", "level": 5 },
+          { "name": "Bourg-Péronnas", "level": 5 },
+          { "name": "Annecy", "level": 6 },
+          { "name": "Cholet", "level": 5 },
+          { "name": "Avranches", "level": 5 },
+          { "name": "Boulogne", "level": 5 },
+          { "name": "Le Mans", "level": 6 },
+          { "name": "Martigues", "level": 6 },
+          { "name": "Lyon-Duchère", "level": 5 },
+          { "name": "Bastia-Borgo", "level": 5 },
+          { "name": "Épinal", "level": 5 },
+          { "name": "Hyères", "level": 6 },
+          { "name": "Red Star", "level": 6 }
+        ]
+      }
+    ]
+  },
+  "Portugal": {
+    "leagues": [
+      {
+        "name": "Primeira Liga",
+        "level": 1,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Benfica", "level": 19 },
+          { "name": "Porto", "level": 19 },
+          { "name": "Sporting CP", "level": 19 },
+          { "name": "Braga", "level": 17 },
+          { "name": "Vitória de Guimarães", "level": 15 },
+          { "name": "Famalicão", "level": 13 },
+          { "name": "Boavista", "level": 12 },
+          { "name": "Marítimo", "level": 11 },
+          { "name": "Gil Vicente", "level": 11 },
+          { "name": "Santa Clara", "level": 10 },
+          { "name": "Portimonense", "level": 10 },
+          { "name": "Moreirense", "level": 10 },
+          { "name": "Estoril", "level": 10 },
+          { "name": "Paços de Ferreira", "level": 10 },
+          { "name": "Casa Pia", "level": 9 },
+          { "name": "Vizela", "level": 9 },
+          { "name": "Chaves", "level": 9 },
+          { "name": "Mafra", "level": 8 }
+        ]
+      },
+      {
+        "name": "Liga Portugal 2",
+        "level": 2,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Nacional", "level": 9 },
+          { "name": "Farense", "level": 8 },
+          { "name": "Penafiel", "level": 8 },
+          { "name": "Rio Ave", "level": 9 },
+          { "name": "Académica", "level": 8 },
+          { "name": "Tondela", "level": 8 },
+          { "name": "Trofense", "level": 7 },
+          { "name": "Leixões", "level": 7 },
+          { "name": "Vilafranquense", "level": 7 },
+          { "name": "B-SAD", "level": 7 },
+          { "name": "Sporting Covilhã", "level": 7 },
+          { "name": "Varzim", "level": 7 },
+          { "name": "Alverca", "level": 7 },
+          { "name": "Estrela da Amadora", "level": 8 },
+          { "name": "Oliveirense", "level": 7 },
+          { "name": "União de Leiria", "level": 7 },
+          { "name": "Felgueiras", "level": 6 },
+          { "name": "Paredes", "level": 6 }
+        ]
+      }
+    ]
+  },
+  "Netherlands": {
+    "leagues": [
+      {
+        "name": "Eredivisie",
+        "level": 1,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Ajax", "level": 19 },
+          { "name": "PSV Eindhoven", "level": 18 },
+          { "name": "Feyenoord", "level": 18 },
+          { "name": "AZ Alkmaar", "level": 16 },
+          { "name": "Vitesse", "level": 14 },
+          { "name": "FC Utrecht", "level": 13 },
+          { "name": "Groningen", "level": 12 },
+          { "name": "Twente", "level": 14 },
+          { "name": "Heerenveen", "level": 12 },
+          { "name": "Fortuna Sittard", "level": 10 },
+          { "name": "Sparta Rotterdam", "level": 11 },
+          { "name": "NEC Nijmegen", "level": 11 },
+          { "name": "Cambuur", "level": 10 },
+          { "name": "Volendam", "level": 9 },
+          { "name": "Excelsior", "level": 9 },
+                    { "name": "RKC Waalwijk", "level": 9 },
+          { "name": "Go Ahead Eagles", "level": 10 },
+          { "name": "Willem II", "level": 10 }
+        ]
+      },
+      {
+        "name": "Eerste Divisie",
+        "level": 2,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Willem II", "level": 10 },
+          { "name": "Den Bosch", "level": 8 },
+          { "name": "Roda JC", "level": 9 },
+          { "name": "De Graafschap", "level": 9 },
+          { "name": "Almere City", "level": 8 },
+          { "name": "ADO Den Haag", "level": 9 },
+          { "name": "FC Eindhoven", "level": 8 },
+          { "name": "MVV", "level": 7 },
+          { "name": "Helmond Sport", "level": 7 },
+          { "name": "Dordrecht", "level": 7 },
+          { "name": "Telstar", "level": 7 },
+          { "name": "TOP Oss", "level": 7 },
+          { "name": "VVV-Venlo", "level": 8 },
+          { "name": "NAC Breda", "level": 8 },
+          { "name": "Emmen", "level": 8 },
+          { "name": "Heracles Almelo", "level": 9 },
+          { "name": "PEC Zwolle", "level": 9 },
+          { "name": "Roda JC", "level": 9 },
+          { "name": "VVV-Venlo", "level": 8 },
+          { "name": "FC Den Bosch", "level": 8 }
+        ]
+      }
+    ]
+  },
+  "Belgium": {
+    "leagues": [
+      {
+        "name": "Belgian Pro League",
+        "level": 1,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Club Brugge", "level": 17 },
+          { "name": "Anderlecht", "level": 17 },
+          { "name": "Union SG", "level": 15 },
+          { "name": "Gent", "level": 15 },
+          { "name": "Standard Liège", "level": 14 },
+          { "name": "Genk", "level": 15 },
+          { "name": "Antwerp", "level": 16 },
+          { "name": "Charleroi", "level": 12 },
+          { "name": "Cercle Brugge", "level": 11 },
+          { "name": "Mechelen", "level": 11 },
+          { "name": "Eupen", "level": 10 },
+          { "name": "KV Oostende", "level": 10 },
+          { "name": "Seraing", "level": 9 },
+          { "name": "Beerschot", "level": 9 },
+          { "name": "Westerlo", "level": 10 },
+          { "name": "Lommel", "level": 9 },
+          { "name": "Dender", "level": 8 },
+          { "name": "Virton", "level": 8 }
+        ]
+      },
+      {
+        "name": "Belgian Division B",
+        "level": 2,
+        "rounds_per_opponent": 4,
+        "teams": [
+          { "name": "Zulte Waregem", "level": 10 },
+          { "name": "Kortrijk", "level": 9 },
+          { "name": "OH Leuven", "level": 9 },
+          { "name": "Sint-Truiden", "level": 9 },
+          { "name": "RWD Molenbeek", "level": 8 },
+          { "name": "SK Beveren", "level": 8 },
+          { "name": "Lierse Kempenzonen", "level": 7 },
+          { "name": "KMSK Deinze", "level": 7 },
+          { "name": "Patro Eisden", "level": 7 },
+          { "name": "RFC Liège", "level": 7 },
+          { "name": "Francs Borains", "level": 6 },
+          { "name": "RAAL La Louvière", "level": 7 }
+        ]
+      }
+    ]
+  },
+  "Brazil": {
+    "leagues": [
+      {
+        "name": "Serie A",
+        "level": 1,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Flamengo", "level": 18 },
+          { "name": "Palmeiras", "level": 18 },
+          { "name": "Atlético Mineiro", "level": 16 },
+          { "name": "São Paulo", "level": 15 },
+          { "name": "Santos", "level": 14 },
+          { "name": "Fluminense", "level": 15 },
+          { "name": "Internacional", "level": 15 },
+          { "name": "Grêmio", "level": 15 },
+          { "name": "Corinthians", "level": 15 },
+          { "name": "Athletico Paranaense", "level": 14 },
+          { "name": "Fortaleza", "level": 13 },
+          { "name": "Botafogo", "level": 13 },
+          { "name": "Ceará", "level": 12 },
+          { "name": "América Mineiro", "level": 11 },
+          { "name": "Coritiba", "level": 11 },
+          { "name": "Bahia", "level": 11 },
+          { "name": "Goiás", "level": 10 },
+          { "name": "Juventude", "level": 10 },
+          { "name": "Atlético Goianiense", "level": 10 },
+          { "name": "Avaí", "level": 10 }
+        ]
+      },
+      {
+        "name": "Serie B",
+        "level": 2,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Cruzeiro", "level": 12 },
+          { "name": "Vila Nova", "level": 8 },
+          { "name": "Chapecoense", "level": 9 },
+          { "name": "CSA", "level": 8 },
+          { "name": "Ponte Preta", "level": 8 },
+          { "name": "Londrina", "level": 8 },
+          { "name": "Operário PR", "level": 7 },
+          { "name": "Guarani", "level": 8 },
+          { "name": "CRB", "level": 8 },
+          { "name": "Remo", "level": 7 },
+          { "name": "Náutico", "level": 7 },
+          { "name": "Brasil de Pelotas", "level": 7 },
+          { "name": "Sampaio Corrêa", "level": 7 },
+          { "name": "Tombense", "level": 7 },
+          { "name": "Confiança", "level": 7 },
+          { "name": "Ituano", "level": 7 },
+          { "name": "Ferroviária", "level": 7 },
+          { "name": "Figueirense", "level": 7 },
+          { "name": "Vasco da Gama", "level": 11 },
+          { "name": "ABC", "level": 7 }
+        ]
+      }
+    ]
+  },
+  "Argentina": {
+    "leagues": [
+      {
+        "name": "Primera División",
+        "level": 1,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Boca Juniors", "level": 18 },
+          { "name": "River Plate", "level": 18 },
+          { "name": "Independiente", "level": 15 },
+          { "name": "Racing Club", "level": 15 },
+          { "name": "San Lorenzo", "level": 14 },
+          { "name": "Vélez Sarsfield", "level": 14 },
+          { "name": "Huracán", "level": 12 },
+          { "name": "Argentinos Juniors", "level": 12 },
+          { "name": "Lanús", "level": 13 },
+          { "name": "Estudiantes", "level": 13 },
+          { "name": "Newell’s Old Boys", "level": 12 },
+          { "name": "Rosario Central", "level": 12 },
+          { "name": "Talleres", "level": 12 },
+          { "name": "Gimnasia La Plata", "level": 11 },
+          { "name": "Banfield", "level": 11 },
+          { "name": "Defensa y Justicia", "level": 11 },
+          { "name": "Unión", "level": 10 },
+          { "name": "Colón", "level": 10 },
+          { "name": "Atlético Tucumán", "level": 10 },
+          { "name": "Central Córdoba", "level": 9 },
+          { "name": "Patronato", "level": 9 },
+          { "name": "Godoy Cruz", "level": 10 },
+          { "name": "Platense", "level": 9 },
+          { "name": "Arsenal de Sarandí", "level": 9 },
+          { "name": "Sarmiento", "level": 9 },
+          { "name": "Atlético Rafaela", "level": 8 },
+          { "name": "Tigre", "level": 10 },
+          { "name": "Barracas Central", "level": 8 }
+        ]
+      },
+      {
+        "name": "Primera Nacional",
+        "level": 2,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Belgrano", "level": 10 },
+          { "name": "Instituto", "level": 9 },
+          { "name": "Ferro Carril Oeste", "level": 8 },
+          { "name": "Quilmes", "level": 8 },
+          { "name": "All Boys", "level": 7 },
+          { "name": "Chacarita Juniors", "level": 7 },
+          { "name": "Deportivo Morón", "level": 7 },
+          { "name": "Villa Dálmine", "level": 7 },
+          { "name": "Brown de Adrogué", "level": 7 },
+          { "name": "Almagro", "level": 7 },
+          { "name": "Mitre", "level": 7 },
+          { "name": "Santamarina", "level": 7 },
+          { "name": "Defensores de Belgrano", "level": 7 },
+          { "name": "San Martín SJ", "level": 8 },
+          { "name": "Estudiantes BA", "level": 7 },
+          { "name": "Gimnasia Jujuy", "level": 7 },
+          { "name": "Gimnasia y Tiro", "level": 6 },
+          { "name": "San Martín T", "level": 7 },
+          { "name": "Agropecuario", "level": 7 },
+          { "name": "Independiente Rivadavia", "level": 7 },
+          { "name": "Brown de Puerto Madryn", "level": 6 },
+          { "name": "Ferro de General Pico", "level": 6 },
+          { "name": "Sportivo Belgrano", "level": 6 },
+          { "name": "Villa Mitre", "level": 6 },
+          { "name": "Nueva Chicago", "level": 7 },
+          { "name": "Tristán Suárez", "level": 6 },
+          { "name": "Atlanta", "level": 6 },
+          { "name": "Temperley", "level": 7 },
+          { "name": "Alvarado", "level": 6 },
+          { "name": "Comunicaciones", "level": 6 },
+          { "name": "Flandria", "level": 6 },
+          { "name": "UAI Urquiza", "level": 6 },
+          { "name": "San Telmo", "level": 6 }
+        ]
+      }
+    ]
+  },
+  "Russia": {
+    "leagues": [
+      {
+        "name": "Russian Premier League",
+        "level": 1,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Zenit St. Petersburg", "level": 17 },
+          { "name": "CSKA Moscow", "level": 16 },
+          { "name": "Spartak Moscow", "level": 16 },
+          { "name": "Lokomotiv Moscow", "level": 15 },
+          { "name": "Krasnodar", "level": 15 },
+          { "name": "Sochi", "level": 13 },
+          { "name": "Dynamo Moscow", "level": 14 },
+          { "name": "Rubin Kazan", "level": 13 },
+          { "name": "Rostov", "level": 13 },
+          { "name": "Ufa", "level": 10 },
+          { "name": "Arsenal Tula", "level": 10 },
+          { "name": "Akhmat Grozny", "level": 10 },
+          { "name": "Orenburg", "level": 10 },
+          { "name": "Khimki", "level": 9 },
+          { "name": "Nizhny Novgorod", "level": 9 },
+          { "name": "Fakel Voronezh", "level": 9 }
+        ]
+      },
+      {
+        "name": "Russian First League",
+        "level": 2,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Baltika Kaliningrad", "level": 8 },
+          { "name": "Torpedo Moscow", "level": 8 },
+          { "name": "Krylia Sovetov", "level": 9 },
+          { "name": "FC Ural", "level": 9 },
+          { "name": "Shinnik Yaroslavl", "level": 7 },
+          { "name": "SKA-Khabarovsk", "level": 7 },
+          { "name": "Volgar Astrakhan", "level": 7 },
+          { "name": "Tekstilshchik Ivanovo", "level": 6 },
+          { "name": "Chayka Peschanokopskoye", "level": 6 },
+          { "name": "KAMAZ Naberezhnye Chelny", "level": 6 },
+          { "name": "Alania Vladikavkaz", "level": 7 },
+          { "name": "Rotor Volgograd", "level": 7 },
+          { "name": "Sokol Saratov", "level": 6 },
+          { "name": "Tyumen", "level": 6 },
+          { "name": "Yenisey Krasnoyarsk", "level": 7 },
+          { "name": "Novosibirsk", "level": 6 },
+          { "name": "Arsenal Tula", "level": 10 },
+          { "name": "Rodina Moscow", "level": 6 }
+        ]
+      }
+    ]
+  },
+  "Turkey": {
+    "leagues": [
+      {
+        "name": "Süper Lig",
+        "level": 1,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Galatasaray", "level": 17 },
+          { "name": "Fenerbahçe", "level": 17 },
+          { "name": "Beşiktaş", "level": 17 },
+          { "name": "Trabzonspor", "level": 16 },
+          { "name": "Başakşehir", "level": 14 },
+          { "name": "Sivasspor", "level": 13 },
+          { "name": "Konyaspor", "level": 12 },
+          { "name": "Alanyaspor", "level": 12 },
+          { "name": "Antalyaspor", "level": 11 },
+          { "name": "Gaziantep FK", "level": 11 },
+          { "name": "Hatayspor", "level": 11 },
+          { "name": "Kayserispor", "level": 10 },
+          { "name": "Giresunspor", "level": 10 },
+          { "name": "Kasımpaşa", "level": 10 },
+          { "name": "Adana Demirspor", "level": 11 },
+          { "name": "İstanbulspor", "level": 9 },
+          { "name": "BB Erzurumspor", "level": 9 },
+          { "name": "Altay", "level": 9 },
+          { "name": "Çaykur Rizespor", "level": 10 },
+          { "name": "Ümraniyespor", "level": 8 }
+        ]
+      },
+      {
+        "name": "TFF First League",
+        "level": 2,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Manisa", "level": 8 },
+          { "name": "Sakaryaspor", "level": 7 },
+          { "name": "Boluspor", "level": 7 },
+          { "name": "Eyüpspor", "level": 7 },
+          { "name": "Bursaspor", "level": 8 },
+          { "name": "Bandırmaspor", "level": 7 },
+          { "name": "Tuzlaspor", "level": 7 },
+          { "name": "Gençlerbirliği", "level": 7 },
+          { "name": "Ankara Keçiörengücü", "level": 7 },
+          { "name": "Samsunspor", "level": 8 },
+          { "name": "Adanaspor", "level": 7 },
+          { "name": "Altınordu", "level": 7 },
+          { "name": "Denizlispor", "level": 7 },
+          { "name": "Kocaelispor", "level": 7 },
+          { "name": "Altay", "level": 9 },
+          { "name": "Altınordu", "level": 7 },
+          { "name": "Çorum", "level": 6 },
+          { "name": "Göztepe", "level": 8 }
+        ]
+      }
+    ]
+  },
+  "Mexico": {
+    "leagues": [
+      {
+        "name": "Liga MX",
+        "level": 1,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Club América", "level": 17 },
+          { "name": "Chivas Guadalajara", "level": 16 },
+          { "name": "Cruz Azul", "level": 16 },
+          { "name": "Pumas UNAM", "level": 15 },
+          { "name": "Tigres UANL", "level": 17 },
+          { "name": "Monterrey", "level": 17 },
+          { "name": "Santos Laguna", "level": 15 },
+          { "name": "León", "level": 15 },
+          { "name": "Tijuana", "level": 13 },
+          { "name": "Toluca", "level": 14 },
+          { "name": "Pachuca", "level": 14 },
+          { "name": "Atlas", "level": 13 },
+          { "name": "Querétaro", "level": 12 },
+          { "name": "Juárez", "level": 11 },
+          { "name": "Mazatlán", "level": 11 },
+          { "name": "Necaxa", "level": 11 },
+          { "name": "Puebla", "level": 11 },
+          { "name": "Atlético San Luis", "level": 11 }
+        ]
+      },
+      {
+        "name": "Ascenso MX",
+        "level": 2,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Atlante", "level": 9 },
+          { "name": "Oaxaca", "level": 8 },
+          { "name": "Cancún", "level": 8 },
+          { "name": "Venados", "level": 7 },
+          { "name": "Tlaxcala", "level": 7 },
+          { "name": "UdeG", "level": 8 },
+          { "name": "Sonora", "level": 7 },
+          { "name": "Tampico Madero", "level": 7 },
+          { "name": "Dorados", "level": 7 },
+          { "name": "Tepatitlán", "level": 7 },
+          { "name": "Alebrijes", "level": 7 },
+          { "name": "Cimarrones", "level": 7 },
+          { "name": "Zacatepec", "level": 7 },
+          { "name": "Irapuato", "level": 7 },
+          { "name": "Leones Negros", "level": 7 },
+          { "name": "Mineros", "level": 7 },
+          { "name": "Tepic", "level": 7 },
+          { "name": "Celaya", "level": 7 }
+        ]
+      }
+    ]
+  },
+  "Scotland": {
+    "leagues": [
+      {
+        "name": "Premiership",
+        "level": 1,
+        "rounds_per_opponent": 4,
+        "teams": [
+          { "name": "Celtic", "level": 17 },
+          { "name": "Rangers", "level": 17 },
+          { "name": "Heart of Midlothian", "level": 13 },
+          { "name": "Hibernian", "level": 12 },
+          { "name": "Aberdeen", "level": 12 },
+          { "name": "St. Mirren", "level": 10 },
+          { "name": "Kilmarnock", "level": 10 },
+          { "name": "Motherwell", "level": 10 },
+          { "name": "Dundee FC", "level": 9 },
+          { "name": "St. Johnstone", "level": 9 },
+          { "name": "Ross County", "level": 9 },
+          { "name": "Livingston", "level": 9 }
+        ]
+      },
+      {
+        "name": "Championship",
+        "level": 2,
+        "rounds_per_opponent": 4,
+        "teams": [
+          { "name": "Dundee United", "level": 10 },
+          { "name": "Raith Rovers", "level": 8 },
+          { "name": "Partick Thistle", "level": 8 },
+          { "name": "Airdrieonians", "level": 7 },
+          { "name": "Greenock Morton", "level": 7 },
+          { "name": "Dunfermline Athletic", "level": 7 },
+          { "name": "Ayr United", "level": 7 },
+          { "name": "Queen’s Park", "level": 7 },
+          { "name": "Inverness Caledonian Thistle", "level": 7 },
+          { "name": "Arbroath", "level": 6 }
+        ]
+      }
+    ]
+  },
+  "USA": {
+    "leagues": [
+      {
+        "name": "MLS",
+        "level": 1,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "St. Louis City", "level": 12 },
+          { "name": "Seattle Sounders", "level": 14 },
+          { "name": "LAFC", "level": 16 },
+          { "name": "Houston Dynamo", "level": 11 },
+          { "name": "Real Salt Lake", "level": 11 },
+          { "name": "Vancouver Whitecaps", "level": 11 },
+          { "name": "FC Dallas", "level": 11 },
+          { "name": "Sporting Kansas City", "level": 11 },
+          { "name": "San Jose Earthquakes", "level": 10 },
+          { "name": "Portland Timbers", "level": 11 },
+          { "name": "Minnesota United", "level": 11 },
+          { "name": "Austin FC", "level": 11 },
+          { "name": "LA Galaxy", "level": 13 },
+          { "name": "Colorado Rapids", "level": 10 },
+          { "name": "FC Cincinnati", "level": 13 },
+          { "name": "Orlando City", "level": 12 },
+          { "name": "Columbus Crew", "level": 13 },
+          { "name": "Philadelphia Union", "level": 14 },
+          { "name": "New England Revolution", "level": 12 },
+          { "name": "Atlanta United", "level": 13 },
+          { "name": "Nashville SC", "level": 12 },
+          { "name": "New York Red Bulls", "level": 12 },
+          { "name": "Charlotte FC", "level": 11 },
+          { "name": "CF Montréal", "level": 11 },
+          { "name": "New York City FC", "level": 12 },
+          { "name": "DC United", "level": 11 },
+          { "name": "Chicago Fire", "level": 10 },
+          { "name": "Inter Miami", "level": 14 },
+          { "name": "Toronto FC", "level": 10 }
+        ]
+      },
+      {
+        "name": "USL Championship",
+        "level": 2,
+        "rounds_per_opponent": 2,
+        "teams": [
+          { "name": "Pittsburgh Riverhounds", "level": 8 },
+          { "name": "Charleston Battery", "level": 8 },
+          { "name": "Louisville City", "level": 8 },
+          { "name": "Memphis 901", "level": 7 },
+          { "name": "Tampa Bay Rowdies", "level": 8 },
+          { "name": "Indy Eleven", "level": 7 },
+          { "name": "Birmingham Legion", "level": 7 },
+          { "name": "Detroit City", "level": 7 },
+          { "name": "Miami FC", "level": 7 },
+          { "name": "FC Tulsa", "level": 7 },
+          { "name": "Loudoun United", "level": 6 },
+          { "name": "Hartford Athletic", "level": 6 },
+          { "name": "Sacramento Republic", "level": 8 },
+          { "name": "Orange County SC", "level": 7 },
+          { "name": "San Diego Loyal", "level": 7 },
+          { "name": "San Antonio FC", "level": 7 },
+          { "name": "Colorado Springs Switchbacks", "level": 7 },
+          { "name": "Phoenix Rising", "level": 8 },
+          { "name": "El Paso Locomotive", "level": 7 },
+          { "name": "Monterey Bay", "level": 6 },
+          { "name": "Rio Grande Valley", "level": 6 },
+          { "name": "Oakland Roots", "level": 7 },
+          { "name": "New Mexico United", "level": 7 },
+          { "name": "Las Vegas Lights", "level": 6 }
+        ]
+      }
+    ]
+  }
+}
