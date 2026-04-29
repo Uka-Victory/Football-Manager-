@@ -1,56 +1,79 @@
 #include "GameCalendar.hpp"
+#include <sstream>
+#include <iomanip>
 
-GameCalendar::GameCalendar() 
-    : currentDay(1), currentMonth(7), currentYear(2025),
-      currentWeekday(2),  // July 1, 2025 was a Tuesday (2 = Tuesday if 0=Sunday? Let's use 0=Monday for simplicity? Actually I'll keep 0=Sunday convention)
-      summerWindowOpen(true), winterWindowOpen(false) {
-    // Let's define: 0=Sunday,1=Monday,2=Tuesday,3=Wednesday,4=Thursday,5=Friday,6=Saturday
-    // July 1, 2025 is Tuesday -> weekday = 2
+// Default start date: July 1st, 2024
+GameCalendar::GameCalendar() : year(2024), month(7), day(1) {} 
+
+GameCalendar::GameCalendar(int startYear, int startMonth, int startDay) 
+    : year(startYear), month(startMonth), day(startDay) {}
+
+bool GameCalendar::isLeapYear(int y) const {
+    // A year is a leap year if it is divisible by 4, 
+    // except for end-of-century years which must be divisible by 400.
+    return (y % 4 == 0 && y % 100 != 0) || (y % 400 == 0);
 }
 
-void GameCalendar::advanceOneDay() {
-    currentDay++;
-    currentWeekday = (currentWeekday + 1) % 7;
-    
-    // Get days in current month
-    int daysInMonth;
-    if (currentMonth == 2) daysInMonth = 28;          // February (ignore leap year for simplicity)
-    else if (currentMonth == 4 || currentMonth == 6 || currentMonth == 9 || currentMonth == 11) daysInMonth = 30;
-    else daysInMonth = 31;
-    
-    if (currentDay > daysInMonth) {
-        currentDay = 1;
-        currentMonth++;
-        if (currentMonth > 12) {
-            currentMonth = 1;
-            currentYear++;
+int GameCalendar::getDaysInMonth(int m, int y) const {
+    switch (m) {
+        case 4: case 6: case 9: case 11: // Thirty days hath September, April, June, and November...
+            return 30;
+        case 2: // February
+            return isLeapYear(y) ? 29 : 28;
+        default: // All the rest have 31
+            return 31;
+    }
+}
+
+void GameCalendar::advanceDay() {
+    day++;
+    if (day > getDaysInMonth(month, year)) {
+        day = 1;
+        month++;
+        if (month > 12) {
+            month = 1;
+            year++;
         }
     }
-    
-    // Summer transfer window: June 15 - August 31
-    if (currentMonth == 6 && currentDay >= 15) summerWindowOpen = true;
-    if (currentMonth == 9 && currentDay >= 1) summerWindowOpen = false;
-    
-    // Winter transfer window: January 1 - January 31
-    if (currentMonth == 1 && currentDay >= 1) winterWindowOpen = true;
-    if (currentMonth == 2 && currentDay >= 1) winterWindowOpen = false;
 }
+
+void GameCalendar::advanceDays(int days) {
+    for (int i = 0; i < days; ++i) {
+        advanceDay();
+    }
+}
+
+int GameCalendar::getYear() const { return year; }
+int GameCalendar::getMonth() const { return month; }
+int GameCalendar::getDay() const { return day; }
 
 std::string GameCalendar::getDateString() const {
-    std::string year = std::to_string(currentYear);
-    std::string month = (currentMonth < 10) ? "0" + std::to_string(currentMonth) : std::to_string(currentMonth);
-    std::string day = (currentDay < 10) ? "0" + std::to_string(currentDay) : std::to_string(currentDay);
-    return year + "-" + month + "-" + day;
-}
-
-bool GameCalendar::isTransferWindowOpen() const {
-    return summerWindowOpen || winterWindowOpen;
-}
-
-bool GameCalendar::isSunday() const {
-    return currentWeekday == 0;
+    std::stringstream ss;
+    // Format visually as YYYY-MM-DD
+    ss << year << "-" 
+       << std::setw(2) << std::setfill('0') << month << "-" 
+       << std::setw(2) << std::setfill('0') << day;
+    return ss.str();
 }
 
 bool GameCalendar::isSeasonEnd() const {
-    return currentMonth == 5 && currentDay >= 31;
+    // The global football season ends on June 30th.
+    return (month == 6 && day == 30);
+}
+
+// --- SAVE / LOAD SYSTEM ---
+
+nlohmann::json GameCalendar::toJson() const {
+    return {
+        {"year", year},
+        {"month", month},
+        {"day", day}
+    };
+}
+
+void GameCalendar::fromJson(const nlohmann::json& j) {
+    // If the save file is missing a date for some reason, default to start date
+    year = j.value("year", 2024);
+    month = j.value("month", 7);
+    day = j.value("day", 1);
 }

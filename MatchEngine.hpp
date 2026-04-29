@@ -1,22 +1,17 @@
 #ifndef MATCHENGINE_HPP
 #define MATCHENGINE_HPP
 
-#include <vector>
-#include <string>
 #include "Team.hpp"
-
-struct MatchResult {
-    Team* homeTeam;
-    Team* awayTeam;
-    int homeGoals;
-    int awayGoals;
-    std::vector<std::string> homeScorers;
-    std::vector<std::string> awayScorers;
-};
+#include "League.hpp"
 
 class MatchEngine {
 public:
-    static MatchResult simulateMatch(Team& home, Team& away);
+    MatchEngine() = default;
+
+    // Takes the Smart Pointers of the two playing teams and the league they belong to.
+    // It will calculate the score, apply fatigue to the players, update their match stats, 
+    // and then automatically log the result in the league standings.
+    void simulateMatch(TeamPtr homeTeam, TeamPtr awayTeam, LeaguePtr league);
 };
 
 #endif

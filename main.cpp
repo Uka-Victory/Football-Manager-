@@ -1,165 +1,145 @@
 #include <iostream>
-#include <vector>
 #include <string>
-#include <algorithm>
-#include <limits>
-#include <sstream>
-#include "Player.hpp"
-#include "Team.hpp"
-#include "League.hpp"
+#include <memory>
+#include "WorldData.hpp"
+#include "GameCalendar.hpp"
+#include "TeamGenerator.hpp"
+#include "NamePool.hpp"
 #include "MatchEngine.hpp"
 #include "TransferEngine.hpp"
-#include "GameCalendar.hpp"
-#include "Finances.hpp"
 #include "Utils.hpp"
-#include "WorldData.hpp"
-#include "NamePool.hpp"
-#include "TeamGenerator.hpp"
 
-// YOUR ORIGINAL WAGE LOGIC
-void generateInitialWageContracts(Team& team) {
-    for (auto& p : team.players) {
-        int base = 5000;
-        if (p.overall >= 80) base = 150000;
-        else if (p.overall >= 75) base = 90000;
-        else if (p.overall >= 70) base = 50000;
-        else if (p.overall >= 65) base = 25000;
-        else if (p.overall >= 60) base = 12000;
-        else if (p.overall >= 55) base = 6000;
-        else if (p.overall >= 50) base = 3000;
-        
-        if (p.age <= 19) base = static_cast<int>(base * 0.5);
-        else if (p.age >= 32) base = static_cast<int>(base * 0.8);
-        
-        int wage = static_cast<int>(base * randDouble(0.9, 1.1));
-        team.finances.contracts[p.uniqueId] = {p.uniqueId, p.name, wage, "2028-06-30", false};
-    }
-}
+using namespace std;
 
-void processWeeklyFinances(Team* team) {
-    int totalWages = team->finances.getTotalWeeklyWages();
-    team->finances.balance -= totalWages;
-    team->finances.wageExpenses += totalWages;
-}
+// --- PROTOTYPES ---
+void runGameLoop(WorldData& world, GameCalendar& calendar, TeamPtr myTeam, LeaguePtr myLeague);
+void createNewGame(WorldData& world, TeamGenerator& generator, GameCalendar& calendar, TeamPtr& myTeam, LeaguePtr& myLeague);
 
 int main() {
-    // 1. DATA LOADING
-    WorldData worldData;
-    if (!worldData.loadFromJson("world_data.json")) return 1;
-    NamePool namePool;
-    if (!namePool.loadFromJson("countries_data.json")) return 1;
+    Utils::initRNG();
+
+    // 1. Initialize Global Tools
+    NamePool namePool("first_names.txt", "last_names.txt"); 
     TeamGenerator generator(namePool);
-    TransferEngine transferEngine;
+    WorldData world;
     GameCalendar calendar;
-    std::vector<League> allLeagues;
 
-    // 2. WORLD GENERATION
-    std::cout << "--- Initializing Football World ---" << std::endl;
-    auto countries = worldData.getAllCountries();
-    for (auto const& [countryName, countryData] : countries) {
-        for (auto const& lInfo : countryData.leagues) {
-            League league(lInfo.name);
-            for (auto const& tInfo : lInfo.teams) {
-                Team temp = generator.generateTeam(tInfo.name, countryName, tInfo.level);
-                Team* newTeam = new Team(temp.name, temp.country, temp.level, temp.finances.balance);
-                newTeam->players = temp.players;
-                newTeam->youthPlayers = temp.youthPlayers;
-                generateInitialWageContracts(*newTeam);
-                league.addTeam(newTeam);
-            }
-            league.generateSchedule("2025-08-01");
-            allLeagues.push_back(std::move(league));
-        }
-    }
-    std::cout << "Total Leagues Generated: " << allLeagues.size() << std::endl;
-
-    // 3. TEAM SELECTION
-    std::cout << "\n=== FOOTBALL MANAGER C++ ===\n";
-    std::cout << "Select a League:\n";
-    for (size_t i = 0; i < allLeagues.size(); ++i) 
-        std::cout << i + 1 << ". " << allLeagues[i].name << "\n";
+    cout << "======================================\n";
+    cout << "     FOOTBALL MANAGER: REBORN       \n";
+    cout << "======================================\n";
+    cout << "1. New Game\n";
+    cout << "2. Load Game\n";
+    cout << "3. Exit\n";
+    cout << "Choice: ";
     
-    int lIdx; std::cin >> lIdx;
-    League* managedLeague = &allLeagues[lIdx - 1];
+    int choice;
+    cin >> choice;
 
-    std::cout << "\nSelect your Club in " << managedLeague->name << ":\n";
-    for (size_t i = 0; i < managedLeague->teams.size(); ++i)
-        std::cout << i + 1 << ". " << managedLeague->teams[i]->name << "\n";
-    
-    int tIdx; std::cin >> tIdx;
-    Team* managedTeam = managedLeague->teams[tIdx - 1];
+    TeamPtr myTeam = nullptr;
+    LeaguePtr myLeague = nullptr;
 
-    // 4. MAIN GAME LOOP
-    bool running = true;
-    while (running) {
-        std::string today = calendar.getDateString();
-        std::cout << "\n========================================";
-        std::cout << "\n DATE: " << today << " | " << managedTeam->name;
-        std::cout << "\n========================================\n";
-
-        // Check if managed team plays today
-        bool matchToday = false;
-        if (managedLeague->fixtures.count(today)) {
-            for (auto& m : managedLeague->fixtures[today]) {
-                if (m.homeTeam == managedTeam || m.awayTeam == managedTeam) matchToday = true;
-            }
+    if (choice == 1) {
+        createNewGame(world, generator, calendar, myTeam, myLeague);
+        runGameLoop(world, calendar, myTeam, myLeague);
+    } 
+    else if (choice == 2) {
+        if (world.loadCareer("save_game.json")) {
+            cout << "\nGame Loaded Successfully!\n";
+            // For now, we just grab the first team and league to act as the player's team
+            myLeague = world.getActiveLeagues().front();
+            myTeam = myLeague->getTeams().front();
+            
+            // In a full implementation, GameCalendar would be saved/loaded via WorldData or a Master Save file.
+            // For this test, we just start the loop!
+            runGameLoop(world, calendar, myTeam, myLeague);
+        } else {
+            cout << "\nFailed to load game. Exiting...\n";
         }
-
-        std::cout << "1. " << (matchToday ? "** PLAY MATCH **" : "Advance One Day") << "\n";
-        std::cout << "2. View League Table\n";
-        std::cout << "3. View Team Squad\n";
-        std::cout << "4. Transfer Market\n";
-        std::cout << "5. My Club Finances\n";
-        std::cout << "6. Exit Game\n";
-        std::cout << "Choice: ";
-
-        int choice;
-        if (!(std::cin >> choice)) break;
-
-        switch (choice) {
-            case 1: {
-                // Simulate all matches for the whole world scheduled for today
-                for (auto& league : allLeagues) {
-                    if (league.fixtures.count(today)) {
-                        for (auto& m : league.fixtures[today]) {
-                            MatchResult res = MatchEngine::simulateMatch(*m.homeTeam, *m.awayTeam);
-                            if (m.homeTeam == managedTeam || m.awayTeam == managedTeam) {
-                                std::cout << "\n[FINAL RESULT] " << m.homeTeam->name << " " << res.homeGoals 
-                                          << " - " << res.awayGoals << " " << m.awayTeam->name << "\n";
-                            }
-                        }
-                    }
-                }
-                calendar.advanceOneDay();
-                if (calendar.isSunday()) {
-                    for (auto& l : allLeagues) {
-                        for (auto* t : l.teams) processWeeklyFinances(t);
-                    }
-                }
-                break;
-            }
-            case 2: managedLeague->printTable(); break;
-            case 3:
-                std::cout << "\n--- Squad List ---\n";
-                for (auto& p : managedTeam->players) std::cout << p.shortInfo() << "\n";
-                break;
-            case 4:
-                std::cout << "\nTotal players on market: " << transferEngine.getAvailableListings().size() << "\n";
-                break;
-            case 5:
-                std::cout << "\nBalance: $" << managedTeam->finances.balance;
-                std::cout << "\nWeekly Wages: $" << managedTeam->finances.getTotalWeeklyWages() << "\n";
-                break;
-            case 6: running = false; break;
-        }
-        std::cout << "\nPress Enter to continue...";
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cin.get();
     }
 
-    // Cleanup
-    for (auto& l : allLeagues) {
-        for (auto* t : l.teams) delete t;
-    }
     return 0;
+}
+
+void createNewGame(WorldData& world, TeamGenerator& generator, GameCalendar& calendar, TeamPtr& myTeam, LeaguePtr& myLeague) {
+    cout << "\nGenerating New World...\n";
+    
+    // 1. Create a Test League
+    myLeague = make_shared<League>("Premier Division", 1);
+    world.addLeagueToWorld(myLeague);
+
+    // 2. Create and Populate Teams
+    string teamNames[] = {"London FC", "Manchester Utd", "Liverpool FC", "Arsenal Blues"};
+    for (const string& name : teamNames) {
+        auto newTeam = make_shared<Team>(name, 1);
+        generator.populateTeam(newTeam); // Generates 23-32 players!
+        world.addTeamToWorld(newTeam);   // Adds to the O(1) global registry
+        myLeague->addTeam(newTeam);      // Adds to the League standings
+    }
+
+    myTeam = myLeague->getTeamByName("London FC"); // Set your managed team
+    
+    // 3. Set starting date
+    calendar = GameCalendar(2024, 7, 1); // Start July 1st, 2024
+    
+    cout << "World Generation Complete!\n";
+}
+
+void runGameLoop(WorldData& world, GameCalendar& calendar, TeamPtr myTeam, LeaguePtr myLeague) {
+    MatchEngine matchEngine;
+    TransferEngine transferEngine;
+    bool playing = true;
+
+    while (playing) {
+        cout << "\n=== " << calendar.getDateString() << " ===\n";
+        cout << "Manager of: " << myTeam->getName() << "\n";
+        cout << "Balance: £" << myTeam->getBalance() << "\n";
+        cout << "1. Advance 1 Day\n";
+        cout << "2. View Squad\n";
+        cout << "3. View League Table\n";
+        cout << "4. Save Game\n";
+        cout << "5. Quit to Desktop\n";
+        cout << "Choice: ";
+        
+        int choice;
+        cin >> choice;
+
+        if (choice == 1) {
+            calendar.advanceDay();
+            
+            // Simulate a random match day just for testing the engines
+            if (calendar.getDay() % 7 == 0) {
+                cout << "\n[Match Day! Simulating fixtures...]\n";
+                auto teams = myLeague->getTeams();
+                matchEngine.simulateMatch(teams[0], teams[1], myLeague);
+                matchEngine.simulateMatch(teams[2], teams[3], myLeague);
+            }
+
+            if (calendar.isSeasonEnd()) {
+                cout << "\n*** SEASON OVER ***\n";
+                myLeague->resetSeason();
+                cout << "Leagues have been reset for the new year.\n";
+            }
+        } 
+        else if (choice == 2) {
+            cout << "\n--- " << myTeam->getName() << " Squad ---\n";
+            for (const auto& player : myTeam->getPlayers()) {
+                cout << player->shortInfo() << " - Fitness: " << player->fitness << "%\n";
+            }
+        }
+        else if (choice == 3) {
+            cout << "\n--- " << myLeague->getName() << " Table ---\n";
+            cout << "Team\t\tPts\tGD\n";
+            for (const auto& row : myLeague->getSortedStandings()) {
+                cout << row.first->getName() << "\t" << row.second.points << "\t" << row.second.goalDifference() << "\n";
+            }
+        }
+        else if (choice == 4) {
+            if (world.saveCareer("save_game.json")) {
+                cout << "\n>>> Game Saved Successfully! <<<\n";
+            }
+        }
+        else if (choice == 5) {
+            playing = false;
+        }
+    }
 }

@@ -3,34 +3,59 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <memory>
+#include <cstdint>
 #include "Player.hpp"
-#include "Finances.hpp"
+#include "json.hpp"
 
 class Team {
-public:
+private:
+    // Core Data
     std::string name;
-    std::string country;
-    int level;                     // NEW: 1-20 team strength level
-    std::vector<Player> players;
-    std::vector<Player> youthPlayers;
-    std::string youthTeamType;
+    int level; // League tier
     
-    ClubFinances finances;
+    // Finances (Upgraded to int64_t)
+    int64_t balance;
+    int64_t transferBudget;
+    int64_t wageBudget;
+
+    // Player Roster
+    std::vector<PlayerPtr> players; // Useful for displaying the squad in order
+    std::unordered_map<std::string, PlayerPtr> playerRegistry; // O(1) instant lookups by ID
+
+public:
+    // Constructors
+    Team() = default;
+    Team(std::string teamName, int teamLevel);
+
+    // Getters & Setters
+    std::string getName() const;
+    int getLevel() const;
     
-    int gamesPlayed;
-    int wins;
-    int draws;
-    int losses;
-    int goalsFor;
-    int goalsAgainst;
-    int points;
+    // Financial Methods
+    int64_t getBalance() const;
+    int64_t getTransferBudget() const;
+    int64_t getWageBudget() const;
+    void addFunds(int64_t amount);
+    bool deductFunds(int64_t amount);
+    void setBudgets(int64_t transfer, int64_t wage);
+
+    // Player Management (Using Smart Pointers)
+    void addPlayer(PlayerPtr player);
+    void removePlayer(const std::string& playerId);
+    PlayerPtr getPlayerById(const std::string& playerId) const;
+    const std::vector<PlayerPtr>& getPlayers() const;
+
+    // Tactical/Team Stats
+    int getTeamOverall() const;
     
-    Team(std::string n, std::string c, int lvl, int initialBalance);
-    void addPlayer(const Player& p);
-    void addYouthPlayer(const Player& p);
-    Player* findPlayer(const std::string& playerName);
-    void updateRecord(int gf, int ga);
-    int getGoalDifference() const;
+    // Save/Load System Methods
+    nlohmann::json toJson() const;
+    void fromJson(const nlohmann::json& j);
 };
+
+// Smart pointer typedef for Team, just like we did for Player
+using TeamPtr = std::shared_ptr<Team>;
 
 #endif

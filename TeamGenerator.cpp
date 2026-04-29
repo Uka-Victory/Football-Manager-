@@ -1,106 +1,106 @@
 #include "TeamGenerator.hpp"
 #include "Utils.hpp"
-#include <map>
+#include <string>
 
-TeamGenerator::TeamGenerator(NamePool& np) : namePool(np) {}
+// We use a static counter to guarantee every player in the world has a 100% unique ID
+static int globalPlayerIdCounter = 1000; 
 
-static const std::vector<std::string> ALL_POSITIONS = {
-    "GK", "RB", "LB", "CB", "DM", "CM", "AM", "LW", "RW", "ST"
-};
+TeamGenerator::TeamGenerator(NamePool& pool) : namePool(pool) {}
 
-static const std::vector<std::pair<std::string, std::string>> SENIOR_POSITION_TEMPLATE = {
-    {"GK", ""}, {"GK", ""}, {"GK", ""},
-    {"RB", ""}, {"RB", ""}, {"LB", ""}, {"LB", ""},
-    {"CB", "CCB"}, {"CB", "LCB"}, {"CB", "RCB"}, {"CB", "CCB"}, {"CB", "LCB"},
-    {"DM", "CDM"}, {"DM", "LDM"},
-    {"CM", "CM"}, {"CM", "LCM"}, {"CM", "RCM"},
-    {"AM", "CAM"}, {"AM", "LAM"}, {"AM", "RAM"},
-    {"LW", ""}, {"RW", ""},
-    {"ST", ""}, {"ST", ""}
-};
+PlayerPtr TeamGenerator::generatePlayer(const std::string& teamName, int teamLevel, const std::string& position, const std::string& role, int ageMin, int ageMax) {
+    
+    // 1. Generate core attributes based on the team's tier
+    int baseOvr;
+    switch (teamLevel) {
+        case 1: baseOvr = Utils::randInt(75, 88); break; // Premier League
+        case 2: baseOvr = Utils::randInt(65, 76); break; // Championship
+        case 3: baseOvr = Utils::randInt(55, 66); break; // League One
+        default: baseOvr = Utils::randInt(45, 56); break; // League Two and below
+    }
 
-static const std::vector<std::pair<std::string, std::string>> YOUTH_POSITION_TEMPLATE = {
-    {"GK", ""}, {"GK", ""},
-    {"RB", ""}, {"LB", ""},
-    {"CB", "CCB"}, {"CB", "LCB"}, {"CB", "RCB"},
-    {"DM", "CDM"},
-    {"CM", "CM"}, {"CM", "RCM"},
-    {"AM", "CAM"}, {"AM", "LAM"},
-    {"LW", ""}, {"RW", ""},
-    {"ST", ""}, {"ST", ""}
-};
+    int age = Utils::randInt(ageMin, ageMax);
+    
+    // Younger players have higher potential ceilings
+    int pot = baseOvr;
+    if (age < 24) {
+        pot = baseOvr + Utils::randInt(5, 15);
+    } else if (age < 29) {
+        pot = baseOvr + Utils::randInt(1, 5);
+    }
+    if (pot > 99) pot = 99; // Cap potential at 99
 
-std::string TeamGenerator::getRandomPosition() {
-    std::uniform_int_distribution<size_t> dist(0, ALL_POSITIONS.size() - 1);
-    return ALL_POSITIONS[dist(rng)];
+    // 2. Generate identity
+    std::string uniqueId = "P" + std::to_string(globalPlayerIdCounter++);
+    std::string name = namePool.generateName();
+    // Defaulting to English for domestic leagues, can be expanded later
+    std::string nationality = "English"; 
+
+    // 3. Create the Smart Pointer
+    auto p = std::make_shared<Player>(uniqueId, name, age, nationality, position, role, baseOvr, pot);
+
+    // 4. Calculate Financials (64-bit integers)
+    // Asking price scales exponentially with overall rating
+    int64_t baseValue = 100000;
+    if (baseOvr >= 85) baseValue = 50000000;
+    else if (baseOvr >= 80) baseValue = 25000000;
+    else if (baseOvr >= 70) baseValue = 5000000;
+    else if (baseOvr >= 60) baseValue = 1000000;
+    
+    // Young players with high potential are worth more
+    if (age < 23 && pot > baseOvr + 5) {
+        baseValue = (int64_t)(baseValue * 1.5);
+    }
+
+    p->askingPrice = baseValue + Utils::randInt(-50000, 500000); 
+    p->wage = baseValue / 520; // Rough weekly wage estimation
+
+    return p;
 }
 
-int TeamGenerator::getOverallForLevel(int level, bool isYouth) {
-    // Map level 1-20 to overall range
-    // Level 20: 85-95, Level 1: 35-45
-    int low = 35 + (level - 1) * 3;
-    int high = 45 + (level - 1) * 3;
-    if (isYouth) {
-        low -= 8;
-        high -= 4;
-    }
-    low = std::max(30, std::min(95, low));
-    high = std::max(35, std::min(99, high));
-    return randInt(low, high);
-}
+void TeamGenerator::populateTeam(TeamPtr team) {
+    if (!team) return;
 
-int TeamGenerator::getInitialBudget(int level) {
-    // Level 20: ~200M, Level 1: ~5M
-    return 5'000'000 + (level - 1) * 10'000'000;
-}
+    int level = team->getLevel();
+    std::string tName = team->getName();
 
-Player TeamGenerator::createSeniorPlayer(const std::string& country, int teamLevel, const std::string& position) {
-    std::string name = namePool.getRandomFullName(country);
-    int age = randInt(17, 34);
-    int overall = getOverallForLevel(teamLevel, false);
-    int potential = overall + randInt(0, 8);
-    if (potential > 94) potential = 94;
-    return Player(name, age, country, position, overall, potential);
-}
+    // Set initial budgets based on tier
+    int64_t transferB = 0;
+    int64_t wageB = 0;
+    switch(level) {
+        case 1: transferB = 80000000; wageB = 1500000; break;
+        case 2: transferB = 15000000; wageB = 300000; break;
+        case 3: transferB = 3000000; wageB = 80000; break;
+        default: transferB = 500000; wageB = 15000; break;
+    }
+    
+    team->setBudgets(transferB, wageB);
+    team->addFunds(transferB / 2); // Initial balance buffer
 
-Player TeamGenerator::createYouthPlayer(const std::string& country, int teamLevel, const std::string& position) {
-    std::string name = namePool.getRandomFullName(country);
-    int age = randInt(15, 19);
-    int overall = getOverallForLevel(teamLevel, true);
-    int potential = overall + randInt(5, 15);
-    if (potential > 94) potential = 94;
-    return Player(name, age, country, position, overall, potential);
-}
+    // --- DYNAMIC SQUAD GENERATION (Minimum 23, Maximum 32) ---
+    
+    // Goalkeepers (Fixed at 3 for safety)
+    team->addPlayer(generatePlayer(tName, level, "GK", "Goalkeeper", 20, 34)); // Main
+    for(int i = 0; i < 2; i++) team->addPlayer(generatePlayer(tName, level, "GK", "Backup", 18, 38));
 
-Team TeamGenerator::generateTeam(const std::string& teamName, const std::string& country, int teamLevel) {
-    int budget = getInitialBudget(teamLevel);
-    Team team(teamName, country, teamLevel, budget);
-    
-    // Senior squad: expand template to ~25 players
-    int seniorSize = std::max(22, std::min(28, 22 + (teamLevel - 10) / 2));
-    std::vector<std::pair<std::string, std::string>> seniorPositions = SENIOR_POSITION_TEMPLATE;
-    while ((int)seniorPositions.size() < seniorSize) {
-        seniorPositions.push_back({"CM", "CM"});
-    }
-    
-    for (const auto& [pos, role] : seniorPositions) {
-        Player p = createSeniorPlayer(country, teamLevel, pos);
-        p.positionRole = role;
-        team.addPlayer(p);
-    }
-    
-    // Youth squad: ~16 players
-    int youthSize = 16;
-    std::vector<std::pair<std::string, std::string>> youthPositions = YOUTH_POSITION_TEMPLATE;
-    while ((int)youthPositions.size() < youthSize) {
-        youthPositions.push_back({"CM", "CM"});
-    }
-    
-    for (const auto& [pos, role] : youthPositions) {
-        Player p = createYouthPlayer(country, teamLevel, pos);
-        p.positionRole = role;
-        team.addYouthPlayer(p);
-    }
-    
-    return team;
+    // Defenders (8 to 10)
+    int numCBs = Utils::randInt(4, 5);
+    int numFBs = Utils::randInt(4, 5);
+    for(int i = 0; i < numCBs; i++) team->addPlayer(generatePlayer(tName, level, "DEF", "Center Back", 19, 33));
+    for(int i = 0; i < numFBs; i++) team->addPlayer(generatePlayer(tName, level, "DEF", "Full Back", 18, 31));
+
+    // Midfielders (8 to 11)
+    int numCMs = Utils::randInt(4, 5);
+    int numDMs = Utils::randInt(2, 3);
+    int numAMs = Utils::randInt(2, 3);
+    for(int i = 0; i < numCMs; i++) team->addPlayer(generatePlayer(tName, level, "MID", "Central Mid", 18, 34));
+    for(int i = 0; i < numDMs; i++) team->addPlayer(generatePlayer(tName, level, "MID", "Defensive Mid", 20, 34));
+    for(int i = 0; i < numAMs; i++) team->addPlayer(generatePlayer(tName, level, "MID", "Attacking Mid", 17, 32));
+
+    // Forwards (4 to 8)
+    int numSTs = Utils::randInt(2, 4);
+    int numRWs = Utils::randInt(1, 2);
+    int numLWs = Utils::randInt(1, 2);
+    for(int i = 0; i < numSTs; i++) team->addPlayer(generatePlayer(tName, level, "FWD", "Striker", 18, 34));
+    for(int i = 0; i < numRWs; i++) team->addPlayer(generatePlayer(tName, level, "FWD", "Right Winger", 17, 31));
+    for(int i = 0; i < numLWs; i++) team->addPlayer(generatePlayer(tName, level, "FWD", "Left Winger", 17, 31));
 }

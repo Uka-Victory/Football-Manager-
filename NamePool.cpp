@@ -1,6 +1,6 @@
 #include "NamePool.hpp"
 #include <fstream>
-#include <nlohmann/json.hpp>
+#include "json.hpp"
 #include <chrono>
 #include <iostream>
 
