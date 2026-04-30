@@ -1,14 +1,26 @@
 #include "Utils.hpp"
-#include <chrono>
+#include <random>
+#include <sstream>
+#include <iomanip>
 
-std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
+static std::mt19937 rng; // Mersenne Twister for high-quality randomness
 
-int randInt(int min, int max) {
+void Utils::initRNG() {
+    std::random_device rd;
+    rng.seed(rd());
+}
+
+int Utils::randInt(int min, int max) {
+    if (min > max) std::swap(min, max);
     std::uniform_int_distribution<int> dist(min, max);
     return dist(rng);
 }
 
-double randDouble(double min, double max) {
-    std::uniform_real_distribution<double> dist(min, max);
-    return dist(rng);
+std::string Utils::generateUniqueId(const std::string& prefix) {
+    const char hex_chars[] = "0123456789ABCDEF";
+    std::string id = prefix;
+    for (int i = 0; i < 8; ++i) {
+        id += hex_chars[randInt(0, 15)];
+    }
+    return id;
 }

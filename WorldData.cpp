@@ -46,19 +46,13 @@ const std::unordered_map<std::string, CountryData>& WorldData::getBaseCountries(
     return baseCountries;
 }
 
-// --- DYNAMIC STATE MANAGEMENT ---
-
 void WorldData::addTeamToWorld(TeamPtr team) {
-    if (team) {
-        globalTeamRegistry[team->getName()] = team; // Add to O(1) registry
-    }
+    if (team) globalTeamRegistry[team->getName()] = team;
 }
 
 TeamPtr WorldData::getTeam(const std::string& teamName) const {
     auto it = globalTeamRegistry.find(teamName);
-    if (it != globalTeamRegistry.end()) {
-        return it->second;
-    }
+    if (it != globalTeamRegistry.end()) return it->second;
     return nullptr;
 }
 
@@ -67,9 +61,7 @@ const std::unordered_map<std::string, TeamPtr>& WorldData::getGlobalTeamRegistry
 }
 
 void WorldData::addLeagueToWorld(LeaguePtr league) {
-    if (league) {
-        activeLeagues.push_back(league);
-    }
+    if (league) activeLeagues.push_back(league);
 }
 
 const std::vector<LeaguePtr>& WorldData::getActiveLeagues() const {
@@ -78,59 +70,63 @@ const std::vector<LeaguePtr>& WorldData::getActiveLeagues() const {
 
 LeaguePtr WorldData::getLeague(const std::string& leagueName) const {
     for (const auto& l : activeLeagues) {
-        if (l->getName() == leagueName) {
-            return l;
-        }
+        if (l->getName() == leagueName) return l;
     }
     return nullptr;
 }
 
-// --- SAVE / LOAD CAREER SYSTEM ---
+// --- UPGRADED SAVE / LOAD CAREER SYSTEM ---
 
-bool WorldData::saveCareer(const std::string& saveFile) const {
+bool WorldData::saveCareer(const std::string& saveFile, const GameCalendar& calendar, TeamPtr playerTeam, LeaguePtr playerLeague) const {
     json j;
 
-    // 1. Save all teams (this naturally triggers Team::toJson, saving all players inside them)
+    // 1. Save the Date
+    j["calendar"] = calendar.toJson();
+
+    // 2. Save Manager Identity
+    j["manager"] = {
+        {"teamName", playerTeam ? playerTeam->getName() : ""},
+        {"leagueName", playerLeague ? playerLeague->getName() : ""}
+    };
+
+    // 3. Save all teams
     json teamsJson = json::array();
     for (const auto& [name, teamPtr] : globalTeamRegistry) {
         teamsJson.push_back(teamPtr->toJson());
     }
     j["teams"] = teamsJson;
 
-    // 2. Save all active leagues (they will only save team names and season standings)
+    // 4. Save all active leagues
     json leaguesJson = json::array();
     for (const auto& leaguePtr : activeLeagues) {
         leaguesJson.push_back(leaguePtr->toJson());
     }
     j["leagues"] = leaguesJson;
 
-    // Write to file with a 4-space indent so it is human-readable
     std::ofstream file(saveFile);
-    if (!file.is_open()) {
-        std::cerr << "Error: Could not open " << saveFile << " for saving." << std::endl;
-        return false;
-    }
+    if (!file.is_open()) return false;
     
     file << j.dump(4); 
     return true;
 }
 
-bool WorldData::loadCareer(const std::string& saveFile) {
+bool WorldData::loadCareer(const std::string& saveFile, GameCalendar& calendar, TeamPtr& playerTeam, LeaguePtr& playerLeague) {
     std::ifstream file(saveFile);
-    if (!file.is_open()) {
-        std::cerr << "Error: Could not find save file " << saveFile << std::endl;
-        return false;
-    }
+    if (!file.is_open()) return false;
 
     try {
         json j;
         file >> j;
 
-        // Clear current active state before loading
         globalTeamRegistry.clear();
         activeLeagues.clear();
 
-        // 1. Load Teams first, so the registry is populated
+        // 1. Restore the Date
+        if (j.contains("calendar")) {
+            calendar.fromJson(j["calendar"]);
+        }
+
+        // 2. Load Teams
         if (j.contains("teams")) {
             for (const auto& teamJson : j["teams"]) {
                 auto team = std::make_shared<Team>();
@@ -139,7 +135,7 @@ bool WorldData::loadCareer(const std::string& saveFile) {
             }
         }
 
-        // 2. Load Leagues and pass them the populated registry to re-link pointers
+        // 3. Load Leagues
         if (j.contains("leagues")) {
             for (const auto& leagueJson : j["leagues"]) {
                 auto league = std::make_shared<League>();
@@ -148,7 +144,15 @@ bool WorldData::loadCareer(const std::string& saveFile) {
             }
         }
 
-        return true;
+        // 4. Restore Manager Identity
+        if (j.contains("manager")) {
+            std::string tName = j["manager"].value("teamName", "");
+            std::string lName = j["manager"].value("leagueName", "");
+            playerTeam = getTeam(tName);
+            playerLeague = getLeague(lName);
+        }
+
+        return (playerTeam != nullptr && playerLeague != nullptr);
     } catch (const std::exception& e) {
         std::cerr << "JSON Parsing Error while loading save: " << e.what() << std::endl;
         return false;

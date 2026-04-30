@@ -8,8 +8,8 @@
 #include "json.hpp"
 #include "League.hpp"
 #include "Team.hpp"
+#include "GameCalendar.hpp" // Added for time-saving
 
-// Structs for reading the initial setup data (world_data.json)
 struct TeamInfo {
     std::string name;
     int level;
@@ -29,24 +29,16 @@ struct CountryData {
 
 class WorldData {
 private:
-    // Static data used just to generate a new game
     std::unordered_map<std::string, CountryData> baseCountries;
-
-    // --- DYNAMIC GAME STATE (The actual living world) ---
-    // This registry owns every team in the game. Leagues just point to this list.
     std::unordered_map<std::string, TeamPtr> globalTeamRegistry; 
-    
-    // The active leagues currently running in the career
     std::vector<LeaguePtr> activeLeagues;
 
 public:
     WorldData() = default;
 
-    // Base Data Loading (Used only when starting a New Game)
     bool loadBaseDataFromJson(const std::string& filepath);
     const std::unordered_map<std::string, CountryData>& getBaseCountries() const;
 
-    // Dynamic State Management
     void addTeamToWorld(TeamPtr team);
     TeamPtr getTeam(const std::string& teamName) const;
     const std::unordered_map<std::string, TeamPtr>& getGlobalTeamRegistry() const;
@@ -55,9 +47,10 @@ public:
     const std::vector<LeaguePtr>& getActiveLeagues() const;
     LeaguePtr getLeague(const std::string& leagueName) const;
 
-    // --- SAVE / LOAD CAREER SYSTEM ---
-    bool saveCareer(const std::string& saveFile) const;
-    bool loadCareer(const std::string& saveFile);
+    // --- UPGRADED SAVE / LOAD SYSTEM ---
+    // Now captures time and manager identity
+    bool saveCareer(const std::string& saveFile, const GameCalendar& calendar, TeamPtr playerTeam, LeaguePtr playerLeague) const;
+    bool loadCareer(const std::string& saveFile, GameCalendar& calendar, TeamPtr& playerTeam, LeaguePtr& playerLeague);
 };
 
 #endif

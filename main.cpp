@@ -8,6 +8,7 @@
 #include "MatchEngine.hpp"
 #include "TransferEngine.hpp"
 #include "Utils.hpp"
+#include "TrainingEngine.hpp"
 
 using namespace std;
 
@@ -16,13 +17,15 @@ void runGameLoop(WorldData& world, GameCalendar& calendar, TeamPtr myTeam, Leagu
 void createNewGame(WorldData& world, TeamGenerator& generator, GameCalendar& calendar, TeamPtr& myTeam, LeaguePtr& myLeague);
 
 int main() {
-    Utils::initRNG();
+    Utils::initRNG(); // Fire up the new Random Number Generator
 
-    // 1. Initialize Global Tools
     NamePool namePool("first_names.txt", "last_names.txt"); 
     TeamGenerator generator(namePool);
     WorldData world;
     GameCalendar calendar;
+
+    TeamPtr myTeam = nullptr;
+    LeaguePtr myLeague = nullptr;
 
     cout << "======================================\n";
     cout << "     FOOTBALL MANAGER: REBORN       \n";
@@ -35,25 +38,17 @@ int main() {
     int choice;
     cin >> choice;
 
-    TeamPtr myTeam = nullptr;
-    LeaguePtr myLeague = nullptr;
-
     if (choice == 1) {
         createNewGame(world, generator, calendar, myTeam, myLeague);
         runGameLoop(world, calendar, myTeam, myLeague);
     } 
     else if (choice == 2) {
-        if (world.loadCareer("save_game.json")) {
+        // We now pass the references so WorldData populates them perfectly!
+        if (world.loadCareer("save_game.json", calendar, myTeam, myLeague)) {
             cout << "\nGame Loaded Successfully!\n";
-            // For now, we just grab the first team and league to act as the player's team
-            myLeague = world.getActiveLeagues().front();
-            myTeam = myLeague->getTeams().front();
-            
-            // In a full implementation, GameCalendar would be saved/loaded via WorldData or a Master Save file.
-            // For this test, we just start the loop!
             runGameLoop(world, calendar, myTeam, myLeague);
         } else {
-            cout << "\nFailed to load game. Exiting...\n";
+            cout << "\nFailed to load game. Save file may be corrupted or missing.\n";
         }
     }
 
@@ -63,23 +58,20 @@ int main() {
 void createNewGame(WorldData& world, TeamGenerator& generator, GameCalendar& calendar, TeamPtr& myTeam, LeaguePtr& myLeague) {
     cout << "\nGenerating New World...\n";
     
-    // 1. Create a Test League
     myLeague = make_shared<League>("Premier Division", 1);
     world.addLeagueToWorld(myLeague);
 
-    // 2. Create and Populate Teams
     string teamNames[] = {"London FC", "Manchester Utd", "Liverpool FC", "Arsenal Blues"};
     for (const string& name : teamNames) {
         auto newTeam = make_shared<Team>(name, 1);
-        generator.populateTeam(newTeam); // Generates 23-32 players!
-        world.addTeamToWorld(newTeam);   // Adds to the O(1) global registry
-        myLeague->addTeam(newTeam);      // Adds to the League standings
+        generator.populateTeam(newTeam); 
+        world.addTeamToWorld(newTeam);   
+        myLeague->addTeam(newTeam);      
     }
 
-    myTeam = myLeague->getTeamByName("London FC"); // Set your managed team
+    myTeam = myLeague->getTeamByName("Arsenal Blues"); // Let's manage Arsenal Blues for testing!
     
-    // 3. Set starting date
-    calendar = GameCalendar(2024, 7, 1); // Start July 1st, 2024
+    calendar = GameCalendar(2024, 7, 1); 
     
     cout << "World Generation Complete!\n";
 }
@@ -87,6 +79,7 @@ void createNewGame(WorldData& world, TeamGenerator& generator, GameCalendar& cal
 void runGameLoop(WorldData& world, GameCalendar& calendar, TeamPtr myTeam, LeaguePtr myLeague) {
     MatchEngine matchEngine;
     TransferEngine transferEngine;
+    TrainingEngine trainingEngine; // NEW: Instantiate the Training Engine
     bool playing = true;
 
     while (playing) {
@@ -106,7 +99,11 @@ void runGameLoop(WorldData& world, GameCalendar& calendar, TeamPtr myTeam, Leagu
         if (choice == 1) {
             calendar.advanceDay();
             
-            // Simulate a random match day just for testing the engines
+            // NEW: Run daily training and fitness recovery for the entire world
+            for (const auto& [teamName, teamPtr] : world.getGlobalTeamRegistry()) {
+                trainingEngine.processDailyTraining(teamPtr);
+            }
+            
             if (calendar.getDay() % 7 == 0) {
                 cout << "\n[Match Day! Simulating fixtures...]\n";
                 auto teams = myLeague->getTeams();
@@ -134,7 +131,7 @@ void runGameLoop(WorldData& world, GameCalendar& calendar, TeamPtr myTeam, Leagu
             }
         }
         else if (choice == 4) {
-            if (world.saveCareer("save_game.json")) {
+            if (world.saveCareer("save_game.json", calendar, myTeam, myLeague)) {
                 cout << "\n>>> Game Saved Successfully! <<<\n";
             }
         }

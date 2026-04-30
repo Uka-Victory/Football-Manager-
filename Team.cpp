@@ -1,7 +1,9 @@
-l#include "Team.hpp"
-#include <algorithm>
+#include "Team.hpp"
+#include <numeric>
 
-Team::Team(std::string teamName, int teamLevel)
+Team::Team() : name("Unknown"), level(1), balance(0), transferBudget(0), wageBudget(0) {}
+
+Team::Team(std::string teamName, int teamLevel) 
     : name(teamName), level(teamLevel), balance(0), transferBudget(0), wageBudget(0) {}
 
 std::string Team::getName() const { return name; }
@@ -11,64 +13,53 @@ int64_t Team::getBalance() const { return balance; }
 int64_t Team::getTransferBudget() const { return transferBudget; }
 int64_t Team::getWageBudget() const { return wageBudget; }
 
-void Team::addFunds(int64_t amount) { 
-    balance += amount; 
-}
-
-bool Team::deductFunds(int64_t amount) {
-    if (balance >= amount) {
-        balance -= amount;
-        return true;
-    }
-    return false;
-}
+void Team::addFunds(int64_t amount) { balance += amount; }
+void Team::deductFunds(int64_t amount) { balance -= amount; if (balance < 0) balance = 0; }
 
 void Team::setBudgets(int64_t transfer, int64_t wage) {
     transferBudget = transfer;
     wageBudget = wage;
 }
 
-// --- PLAYER MANAGEMENT (Smart Pointers & Hash Map) ---
-
 void Team::addPlayer(PlayerPtr player) {
-    if (!player) return; // Safety check
-    players.push_back(player); // Add to display roster
-    playerRegistry[player->uniqueId] = player; // Add to O(1) lookup map
+    if (player) squad.push_back(player);
 }
 
 void Team::removePlayer(const std::string& playerId) {
-    // 1. Remove from the instant lookup registry
-    playerRegistry.erase(playerId);
-    
-    // 2. Safely remove from the roster vector
-    players.erase(std::remove_if(players.begin(), players.end(),
-        [&playerId](const PlayerPtr& p) { return p->uniqueId == playerId; }), 
-        players.end());
+    auto it = std::remove_if(squad.begin(), squad.end(), [&](const PlayerPtr& p) {
+        return p->id == playerId;
+    });
+    if (it != squad.end()) {
+        squad.erase(it, squad.end());
+    }
 }
 
 PlayerPtr Team::getPlayerById(const std::string& playerId) const {
-    // O(1) Instant Hash Map Lookup!
-    auto it = playerRegistry.find(playerId);
-    if (it != playerRegistry.end()) {
-        return it->second; // Found them, return the pointer
+    for (const auto& p : squad) {
+        if (p->id == playerId) return p;
     }
-    return nullptr; // Player not found
+    return nullptr;
 }
 
 const std::vector<PlayerPtr>& Team::getPlayers() const {
-    return players;
+    return squad;
 }
 
 int Team::getTeamOverall() const {
-    if (players.empty()) return 0;
-    int total = 0;
-    for (const auto& p : players) {
-        total += p->overall;
+    if (squad.empty()) return 0;
+    int totalOvr = 0;
+    for (const auto& p : squad) {
+        totalOvr += p->overall;
     }
-    return total / players.size();
+    return totalOvr / squad.size();
 }
 
-// --- SAVE / LOAD SYSTEM ---
+// NEW: Facilities Getter
+Facilities& Team::getFacilities() {
+    return facilities;
+}
+
+// --- SAVE / LOAD ---
 
 nlohmann::json Team::toJson() const {
     nlohmann::json j;
@@ -77,34 +68,37 @@ nlohmann::json Team::toJson() const {
     j["balance"] = balance;
     j["transferBudget"] = transferBudget;
     j["wageBudget"] = wageBudget;
-    
-    // Serialize every player into a JSON array
+
     nlohmann::json playersJson = nlohmann::json::array();
-    for (const auto& p : players) {
+    for (const auto& p : squad) {
         playersJson.push_back(p->toJson());
     }
-    j["players"] = playersJson;
-    
+    j["squad"] = playersJson;
+
+    // NEW: Save Facilities
+    j["facilities"] = facilities.toJson();
+
     return j;
 }
 
 void Team::fromJson(const nlohmann::json& j) {
-    name = j.value("name", "Unknown Team");
+    name = j.value("name", "Unknown");
     level = j.value("level", 1);
     balance = j.value("balance", 0LL);
     transferBudget = j.value("transferBudget", 0LL);
     wageBudget = j.value("wageBudget", 0LL);
-    
-    // Clear out existing players before loading
-    players.clear();
-    playerRegistry.clear();
-    
-    if (j.contains("players")) {
-        for (const auto& pJson : j["players"]) {
-            // Create a new smart pointer for each loaded player
+
+    squad.clear();
+    if (j.contains("squad")) {
+        for (const auto& playerJson : j["squad"]) {
             auto p = std::make_shared<Player>();
-            p->fromJson(pJson);
-            addPlayer(p); // This adds them to both the vector and the hash map
+            p->fromJson(playerJson);
+            squad.push_back(p);
         }
+    }
+
+    // NEW: Load Facilities
+    if (j.contains("facilities")) {
+        facilities.fromJson(j["facilities"]);
     }
 }
