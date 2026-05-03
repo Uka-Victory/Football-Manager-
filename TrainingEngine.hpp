@@ -1,12 +1,12 @@
-#ifndef TRAININGENGINE_HPP
-#define TRAININGENGINE_HPP
-
+#pragma once
 #include "Team.hpp"
+#include <memory>
 
-class TrainingEngine {
-public:
-    // Processes fitness recovery, injury rolls, and CA/PA growth based on Facility levels
-    static void processDailyTraining(TeamPtr team);
-};
+namespace FootballManager {
 
-#endif
+    class TrainingEngine {
+    public:
+        static void processDailyTraining(std::shared_ptr<Team> team);
+    };
+
+} // namespace FootballManager

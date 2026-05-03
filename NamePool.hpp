@@ -1,21 +1,19 @@
-#ifndef NAMEPOOL_HPP
-#define NAMEPOOL_HPP
-
+#pragma once
 #include <string>
 #include <vector>
-#include <unordered_map>
 
-class NamePool {
-private:
-    struct NationNames {
-        std::vector<std::string> names;
+namespace FootballManager {
+
+    class NamePool {
+    private:
+        std::vector<std::string> firstNames;
+        std::vector<std::string> lastNames;
+        std::vector<std::string> countries;
+
+    public:
+        NamePool();
+        std::string generateName(const std::string& nation);
+        std::string getRandomCountry();
     };
-    std::unordered_map<std::string, NationNames> database;
 
-public:
-    NamePool() = default;
-    bool loadFromJson(const std::string& filepath);
-    std::string generateName(const std::string& nationality);
-};
-
-#endif
+} // namespace FootballManager

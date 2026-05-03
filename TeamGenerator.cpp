@@ -1,88 +1,51 @@
 #include "TeamGenerator.hpp"
 #include "Utils.hpp"
-#include "Constants.hpp"
 #include <algorithm>
 
-TeamGenerator::TeamGenerator(NamePool& pool) : namePool(pool) {}
+namespace FootballManager {
 
-PlayerPtr TeamGenerator::generatePlayer(const std::string& teamCountry, int teamLevel, const std::string& position, int ageMin, int ageMax, double domesticBias) {
-    // ENFORCED CONSTRAINT: Maximum domestic bias is 50%
-    if (domesticBias > 0.50) {
-        domesticBias = 0.50;
+    std::shared_ptr<Player> TeamGenerator::generatePlayer(const std::string& teamCountry,
+                                                           Position pos,
+                                                           int ageMin, int ageMax,
+                                                           int baseLevel,
+                                                           NamePool& namePool) {
+        // Fix: Use Utils::randInt (seeded once at startup) instead of creating
+        // a new std::random_device + std::mt19937 per player call
+        std::string id   = "P_" + std::to_string(Utils::randInt(10000, 99999));
+        std::string name = namePool.generateName(teamCountry);
+        int age          = Utils::randInt(ageMin, ageMax);
+
+        auto player = std::make_shared<Player>(id, name, age, pos);
+
+        // Scale club level (1–100) down to the 1–20 attribute range
+        int attrBase = std::clamp(baseLevel / 5, 5, 20);
+
+        player->setAttribute("finishing",   std::clamp(attrBase + Utils::randInt(-2, 2), 1, 20));
+        player->setAttribute("passing",     std::clamp(attrBase + Utils::randInt(-2, 2), 1, 20));
+        player->setAttribute("tackling",    std::clamp(attrBase + Utils::randInt(-2, 2), 1, 20));
+        player->setAttribute("pace",        std::clamp(attrBase + Utils::randInt(-2, 2), 1, 20));
+        player->setAttribute("vision",      std::clamp(attrBase + Utils::randInt(-2, 2), 1, 20));
+        player->setAttribute("positioning", std::clamp(attrBase + Utils::randInt(-2, 2), 1, 20));
+
+        player->assignContract(attrBase * 1000, 2028);
+
+        return player;
     }
 
-    auto p = std::make_shared<Player>();
-    p->uniqueId = "P_" + Utils::generateUniqueId();
-    
-    // The Melting Pot: Domestic vs Foreign Roll
-    std::string playerNation = teamCountry;
-    if (Utils::randDouble() > domesticBias) {
-        playerNation = namePool.getRandomCountry();
-    }
+    void TeamGenerator::populateTeam(std::shared_ptr<Team> team, int squadSize, NamePool& namePool) {
+        if (!team) return;
 
-    // Assign cultural name and nationality
-    p->name = namePool.generateName(playerNation);
-    p->nationality = playerNation;
-    p->homeGrownNation = teamCountry; // Regardless of nationality, trained in the club's country
-    p->age = Utils::randInt(ageMin, ageMax);
-    p->primaryPosition = position;
-    
-    // CA and PA scale from 1 to 200 based on the 1-20 Team Level
-    int baseCA = (teamLevel * 7) + 30; 
-    p->currentAbility = std::clamp(baseCA + Utils::randInt(-15, 15), FM::MIN_CA_PA, FM::MAX_CA_PA);
-    
-    if (p->age < 23) {
-        p->potentialAbility = std::clamp(p->currentAbility + Utils::randInt(10, 40), p->currentAbility, FM::MAX_CA_PA);
-    } else {
-        p->potentialAbility = p->currentAbility; 
-    }
+        std::string country = namePool.getRandomCountry();
+        int baseLevel       = team->getClubLevel();
 
-    // Pass the 1-20 team level into the atomic generator
-    p->generateAttributes(teamLevel, position);
-    p->generatePlaystyle(position);
-    p->generateTraits();
-    
-    p->contractLengthMonths = 12 + Utils::randInt(0, 36);
-    p->wage = static_cast<int64_t>(p->currentAbility) * 1500LL; // Base wage scaling
-    
-    return p;
-}
+        // Always generate exactly one GK at index 0
+        team->addPlayerToSenior(generatePlayer(country, Position::GK, 18, 34, baseLevel, namePool));
 
-void TeamGenerator::populateTeam(TeamPtr team, int seniorCount, int youthCount) {
-    if (!team) return;
-    
-    int level = team->getLevel(); // 1-20
-    std::string country = team->getCountry();
-
-    // 1. Generate Senior Squad (30 Players, max 50% Domestic)
-    int gks = 3, defs = 9, mids = 12; // remaining 6 naturally go to attack
-    
-    for (int i = 0; i < seniorCount; ++i) {
-        std::string pos;
-        
-        if (i < gks) {
-            pos = "GK";
-        } else if (i < gks + defs) {
-            // Distribute defenders: roughly 50% CB, 25% LB, 25% RB
-            double r = Utils::randDouble();
-            pos = (r > 0.5) ? "CB" : (r > 0.25 ? "LB" : "RB");
-        } else if (i < gks + defs + mids) {
-            // Distribute midfielders
-            double r = Utils::randDouble();
-            pos = (r > 0.6) ? "CM" : (r > 0.4 ? "DM" : (r > 0.2 ? "AM" : (r > 0.1 ? "LM" : "RM")));
-        } else {
-            // Attackers
-            double r = Utils::randDouble();
-            pos = (r > 0.4) ? "ST" : (r > 0.2 ? "LW" : "RW");
+        // Cycle through outfield positions for the rest of the squad
+        for (int i = 1; i < squadSize; ++i) {
+            Position pos = static_cast<Position>((i % 9) + 1);
+            team->addPlayerToSenior(generatePlayer(country, pos, 18, 34, baseLevel, namePool));
         }
-        
-        // Pass 0.50 to enforce the 50% maximum domestic cap
-        team->addPlayer(generatePlayer(country, level, pos, 18, 34, 0.50), false);
     }
 
-    // 2. Generate Youth Squad (Regens) (20 Players, max 50% Domestic)
-    for (int i = 0; i < youthCount; ++i) {
-        std::string pos = Utils::randomPosition();
-        team->addPlayer(generatePlayer(country, level, pos, 15, 18, 0.50), true);
-    }
-}
+} // namespace FootballManager

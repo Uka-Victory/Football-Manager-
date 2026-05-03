@@ -1,23 +1,21 @@
-#ifndef TEAMGENERATOR_HPP
-#define TEAMGENERATOR_HPP
-
-#include <string>
+#pragma once
 #include "Team.hpp"
 #include "NamePool.hpp"
-#include "WorldData.hpp"
+#include "Player.hpp"
+#include <memory>
+#include <string>
 
-class TeamGenerator {
-private:
-    NamePool& namePool;
+namespace FootballManager {
 
-    PlayerPtr generatePlayer(const std::string& teamCountry, int teamLevel, const std::string& position, int ageMin, int ageMax);
+    class TeamGenerator {
+    public:
+        static std::shared_ptr<Player> generatePlayer(const std::string& teamCountry,
+                                                       Position pos,
+                                                       int ageMin, int ageMax,
+                                                       int baseLevel,
+                                                       NamePool& namePool);
 
-public:
-    // Pass the NamePool by reference to utilize the massive JSON dataset efficiently
-    TeamGenerator(NamePool& pool);
+        static void populateTeam(std::shared_ptr<Team> team, int squadSize, NamePool& namePool);
+    };
 
-    // Populates a team using the strict 1-20 scale from the countries_data.json
-    void populateTeam(TeamPtr team, int seniorCount = 22, int youthCount = 8);
-};
-
-#endif
+} // namespace FootballManager

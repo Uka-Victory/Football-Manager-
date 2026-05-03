@@ -1,30 +1,31 @@
 #include "NamePool.hpp"
 #include "Utils.hpp"
-#include "json.hpp"
-#include <fstream>
-#include <iostream>
 
-bool NamePool::loadFromJson(const std::string& filepath) {
-    std::ifstream file(filepath);
-    if (!file.is_open()) return false;
-    try {
-        nlohmann::json j;
-        file >> j;
-        for (auto& [country, names] : j.items()) {
-            NationNames nn;
-            for (const auto& n : names) nn.names.push_back(n.get<std::string>());
-            database[country] = nn;
-        }
-        return true;
-    } catch (...) { return false; }
-}
+namespace FootballManager {
 
-std::string NamePool::generateName(const std::string& nationality) {
-    auto it = database.find(nationality);
-    if (it == database.end() || it->second.names.empty()) return "Unknown Player";
-    
-    const auto& list = it->second.names;
-    std::string first = list[Utils::randInt(0, list.size() - 1)];
-    std::string last = list[Utils::randInt(0, list.size() - 1)];
-    return first + " " + last;
-}
+    NamePool::NamePool() {
+        firstNames = {"James", "Ahmed", "Carlos", "David", "Sato",
+                      "Marco", "Luis",  "Pierre", "Emeka", "Yuki"};
+        lastNames  = {"Smith",  "Johnson", "Silva",   "Müller", "Okafor",
+                      "Rossi",  "Herrera", "Dubois",  "Adeola", "Tanaka"};
+        countries  = {"England", "Brazil",    "Germany", "Nigeria", "Japan",
+                      "Italy",   "Argentina", "France",  "Ghana",   "Spain"};
+    }
+
+    // Fix: Use Utils::randInt (properly seeded) instead of a local random_device per call.
+    // The nation parameter is reserved for future culturally-aware name lookup.
+    std::string NamePool::generateName(const std::string& /*nation*/) {
+        if (firstNames.empty() || lastNames.empty()) return "Unknown Player";
+
+        int firstIdx = Utils::randInt(0, static_cast<int>(firstNames.size()) - 1);
+        int lastIdx  = Utils::randInt(0, static_cast<int>(lastNames.size())  - 1);
+
+        return firstNames[firstIdx] + " " + lastNames[lastIdx];
+    }
+
+    std::string NamePool::getRandomCountry() {
+        if (countries.empty()) return "Unknown";
+        return countries[Utils::randInt(0, static_cast<int>(countries.size()) - 1)];
+    }
+
+} // namespace FootballManager

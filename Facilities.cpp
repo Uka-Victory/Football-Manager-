@@ -1,43 +1,22 @@
-#include "Facilities.hpp"
+#include "Finances.hpp"
 #include <algorithm>
 
 namespace FootballManager {
 
-    Facilities::Facilities(int startTraining, int startAcademy, int startStadium, int startInfirmary)
-        : trainingLevel(std::clamp(startTraining, 1, 20)),
-          academyLevel(std::clamp(startAcademy, 1, 20)),
-          stadiumCapacity(startStadium),
-          infirmaryLevel(std::clamp(startInfirmary, 1, 20)) {}
+    Finances::Finances(long long initialBalance, long long initialWageBudget)
+        : balance(initialBalance), wageBudget(initialWageBudget), currentWageSpend(0) {}
 
-    float Facilities::getFatigueDecayModifier() const {
-        // Higher infirmary level reduces fatigue decay speed
-        return 1.0f - (infirmaryLevel * 0.02f); 
+    void Finances::addWage(long long amount) {
+        currentWageSpend += amount;
     }
 
-    bool Facilities::upgradeTraining() {
-        if (trainingLevel < 20) {
-            trainingLevel++;
-            return true;
-        }
-        return false;
+    void Finances::removeWage(long long amount) {
+        currentWageSpend = std::max(0LL, currentWageSpend - amount);
     }
 
-    bool Facilities::upgradeAcademy() {
-        if (academyLevel < 20) {
-            academyLevel++;
-            return true;
-        }
-        return false;
-    }
-
-    bool Facilities::upgradeStadium() {
-        stadiumCapacity += 5000;
-        return true;
-    }
-
-    bool Facilities::upgradeInfirmary() {
-        if (infirmaryLevel < 20) {
-            infirmaryLevel++;
+    bool Finances::processTransfer(long long fee) {
+        if (balance >= fee) {
+            balance -= fee;
             return true;
         }
         return false;

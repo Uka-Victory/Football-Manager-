@@ -1,54 +1,37 @@
 #pragma once
 #include "Player.hpp"
+#include "Finances.hpp"
+#include "Facilities.hpp"
 #include <vector>
+#include <string>
 #include <memory>
-#include <map>
-#include <stdexcept>
 
 namespace FootballManager {
 
-    using PlayerPtr = std::shared_ptr<Player>;
-
     class Team {
     private:
-        int clubLevel; // 1-20
-        int wageBudget;
-        int currentWageSpend;
-
-        std::vector<PlayerPtr> seniorSquad; // Cap: 25-35, Floor: 18
-        std::vector<PlayerPtr> youthTeam;
-        std::vector<PlayerPtr> academy;
-
-        // Manual Depth Chart: Maps a Position to an ordered list of players
-        std::map<Position, std::vector<PlayerPtr>> depthChart;
+        std::string name;
+        int clubLevel;
+        std::vector<std::shared_ptr<Player>> seniorSquad;
+        std::shared_ptr<Finances>   finances;
+        std::shared_ptr<Facilities> facilities;
 
     public:
-        Team(int level, int budget);
+        Team(std::string teamName, int level);
 
-        // Core Roster Management
-        void addPlayerToSenior(PlayerPtr player);
-        void addPlayerToYouth(PlayerPtr player);
-        void addPlayerToAcademy(PlayerPtr player);
-        
-        void promoteToSenior(PlayerPtr player);
-        void demoteToYouth(PlayerPtr player);
+        std::string getName()     const { return name; }
+        int getClubLevel()        const { return clubLevel; }
 
-        // Auto Squad Logic & Integrity
-        void validateRoster(); // Enforces the 18-player hard floor
-        std::vector<PlayerPtr> getBestXI();
+        std::shared_ptr<Finances>   getFinances()   const { return finances; }
+        std::shared_ptr<Facilities> getFacilities() const { return facilities; }
 
-        // Manual Hierarchy Management
-        void setManualRank(Position pos, PlayerPtr player, int newRank);
-        void resetPositionHierarchy(Position pos);
+        void addPlayerToSenior(std::shared_ptr<Player> player);
+        void releasePlayer(std::shared_ptr<Player> player);
 
-        // April 1st Logic
-        std::vector<PlayerPtr> getGraduatingAcademyPlayers(int currentYear);
-        void offerProfessionalContract(PlayerPtr player, int wage, int duration, bool toSenior);
-        void releasePlayer(PlayerPtr player); // Hooks into WorldData Free Agent Pool externally
-        
-        // Finances
-        int getAvailableWageBudget() const { return wageBudget - currentWageSpend; }
-        int getClubLevel() const { return clubLevel; }
+        std::vector<std::shared_ptr<Player>> getSeniorSquad() const { return seniorSquad; }
+
+        // Fix: getBestXI now guarantees a GK at index 0 before filling outfield spots
+        std::vector<std::shared_ptr<Player>> getBestXI();
     };
 
 } // namespace FootballManager

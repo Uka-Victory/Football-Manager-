@@ -2,28 +2,22 @@
 
 namespace FootballManager {
 
-    class Facilities {
+    class Finances {
     private:
-        int trainingLevel;  // 1-20
-        int academyLevel;   // 1-20
-        int stadiumCapacity;
-        int infirmaryLevel; // 1-20
+        long long balance;
+        long long wageBudget;
+        long long currentWageSpend;
 
     public:
-        Facilities(int startTraining, int startAcademy, int startStadium, int startInfirmary);
+        Finances(long long initialBalance, long long initialWageBudget);
 
-        // Functional Methods
-        float getFatigueDecayModifier() const;
-        bool upgradeTraining();
-        bool upgradeAcademy();
-        bool upgradeStadium();
-        bool upgradeInfirmary();
-        
-        // Inline Getters
-        int getTrainingLevel() const { return trainingLevel; }
-        int getAcademyLevel() const { return academyLevel; }
-        int getStadiumCapacity() const { return stadiumCapacity; }
-        int getInfirmaryLevel() const { return infirmaryLevel; }
+        long long getBalance() const { return balance; }
+        long long getWageBudget() const { return wageBudget; }
+        long long getAvailableWageBudget() const { return wageBudget - currentWageSpend; }
+
+        void addWage(long long amount);
+        void removeWage(long long amount);
+        bool processTransfer(long long fee);
     };
 
 } // namespace FootballManager
