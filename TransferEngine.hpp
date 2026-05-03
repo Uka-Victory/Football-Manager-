@@ -1,22 +1,30 @@
 #ifndef TRANSFERENGINE_HPP
 #define TRANSFERENGINE_HPP
 
-#include <string>
-#include <cstdint>
 #include "Team.hpp"
-#include "WorldData.hpp"
+#include "Player.hpp"
+#include <vector>
+
+struct TransferBid {
+    TeamPtr buyer;
+    TeamPtr seller;
+    PlayerPtr player;
+    int64_t amount = 0;
+    bool isLoan = false;
+    int loanMonths = 0;
+    bool accepted = false;
+};
 
 class TransferEngine {
 public:
-    TransferEngine() = default;
-
-    // Executes a transfer between two clubs using their smart pointers
-    // Uses int64_t to safely handle massive real-world transfer fees
-    bool completeTransfer(TeamPtr buyingTeam, TeamPtr sellingTeam, const std::string& playerId, int64_t transferFee, int64_t newWage);
-
-    // AI logic for computer-controlled teams to buy and sell players
-    // Takes the entire WorldData by reference so the AI can scout the global player registry
-    void processAITransfers(WorldData& world);
+    // Computes dynamic valuation based on CA, age, contract length, and home-grown status
+    static int64_t calculateMarketValue(const PlayerPtr& p, const TeamPtr& buyingTeam = nullptr);
+    
+    // The Social Dilemma Loop: AI managers calculate risk and make bids
+    static void processAITransfers(std::vector<TeamPtr>& allTeams);
+    
+    // Executes the financial and roster shifts if a bid is accepted
+    static bool completeTransfer(TransferBid& bid);
 };
 
 #endif

@@ -4,20 +4,20 @@
 #include <string>
 #include "Team.hpp"
 #include "NamePool.hpp"
+#include "WorldData.hpp"
 
 class TeamGenerator {
 private:
     NamePool& namePool;
 
-    // Internal helper to generate a single player using Smart Pointers
-    PlayerPtr generatePlayer(const std::string& teamName, int teamLevel, const std::string& position, const std::string& role, int ageMin, int ageMax);
+    PlayerPtr generatePlayer(const std::string& teamCountry, int teamLevel, const std::string& position, int ageMin, int ageMax);
 
 public:
-    // Pass the NamePool by reference for massive performance gains
+    // Pass the NamePool by reference to utilize the massive JSON dataset efficiently
     TeamGenerator(NamePool& pool);
 
-    // Populates an existing team pointer with 23 players and sets initial budgets
-    void populateTeam(TeamPtr team);
+    // Populates a team using the strict 1-20 scale from the countries_data.json
+    void populateTeam(TeamPtr team, int seniorCount = 22, int youthCount = 8);
 };
 
 #endif

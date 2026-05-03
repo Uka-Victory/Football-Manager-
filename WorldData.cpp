@@ -1,160 +1,81 @@
 #include "WorldData.hpp"
-#include <fstream>
-#include <iostream>
+#include <algorithm>
 
-using json = nlohmann::json;
+namespace FootballManager {
 
-bool WorldData::loadBaseDataFromJson(const std::string& filepath) {
-    std::ifstream file(filepath);
-    if (!file.is_open()) {
-        std::cerr << "Error: Could not open " << filepath << " for base data." << std::endl;
-        return false;
+    WorldData::WorldData() {}
+
+    void WorldData::registerPlayer(PlayerPtr player) {
+        if (player) {
+            globalPlayerRegistry[player->getId()] = player;
+        }
     }
 
-    try {
-        json j;
-        file >> j;
+    void WorldData::addFreeAgent(PlayerPtr player) {
+        if (player) {
+            // Ensure they aren't already in the pool
+            auto it = std::find(freeAgentPool.begin(), freeAgentPool.end(), player);
+            if (it == freeAgentPool.end()) {
+                // Clear contract data
+                player->assignContract(0, 0); 
+                freeAgentPool.push_back(player);
+            }
+        }
+    }
 
-        for (const auto& countryJson : j["countries"]) {
-            CountryData cd;
-            cd.country = countryJson.value("name", "Unknown");
+    void WorldData::removeFreeAgent(const std::string& playerId) {
+        freeAgentPool.erase(
+            std::remove_if(freeAgentPool.begin(), freeAgentPool.end(),
+                [&playerId](const PlayerPtr& p) { return p->getId() == playerId; }),
+            freeAgentPool.end()
+        );
+    }
 
-            for (const auto& leagueJson : countryJson["leagues"]) {
-                LeagueInfo li;
-                li.name = leagueJson.value("name", "Unknown League");
-                li.level = leagueJson.value("level", 1);
-                li.roundsPerOpponent = leagueJson.value("roundsPerOpponent", 2);
+    PlayerPtr WorldData::findPlayerGlobally(const std::string& playerId) const {
+        auto it = globalPlayerRegistry.find(playerId);
+        if (it != globalPlayerRegistry.end()) {
+            return it->second;
+        }
+        return nullptr;
+    }
 
-                for (const auto& teamJson : leagueJson["teams"]) {
-                    TeamInfo ti;
-                    ti.name = teamJson.value("name", "Unknown Team");
-                    ti.level = teamJson.value("level", li.level);
-                    li.teams.push_back(ti);
+    void WorldData::addToWatchlist(const std::string& playerId) {
+        if (std::find(scoutWatchlist.begin(), scoutWatchlist.end(), playerId) == scoutWatchlist.end()) {
+            scoutWatchlist.push_back(playerId);
+        }
+    }
+
+    void WorldData::removeFromWatchlist(const std::string& playerId) {
+        scoutWatchlist.erase(
+            std::remove(scoutWatchlist.begin(), scoutWatchlist.end(), playerId),
+            scoutWatchlist.end()
+        );
+    }
+
+    void WorldData::processAprilFirstGraduation(std::vector<std::shared_ptr<Team>>& allWorldTeams, int currentYear) {
+        for (auto& team : allWorldTeams) {
+            std::vector<PlayerPtr> graduates = team->getGraduatingAcademyPlayers(currentYear);
+            
+            for (auto& prospect : graduates) {
+                // AI Logic for AI Teams: Sign if Potential is high, else release
+                // User team logic will be intercepted by main.cpp before this auto-resolves.
+                
+                // For engine fallback: if they hit this loop without a contract, they are released.
+                if (prospect->getWeeklyWage() == 0) {
+                    team->releasePlayer(prospect);
+                    addFreeAgent(prospect);
                 }
-                cd.leagues.push_back(li);
-            }
-            baseCountries[cd.country] = cd;
-        }
-        return true;
-    } catch (const std::exception& e) {
-        std::cerr << "JSON Parsing Error in base data: " << e.what() << std::endl;
-        return false;
-    }
-}
-
-const std::unordered_map<std::string, CountryData>& WorldData::getBaseCountries() const {
-    return baseCountries;
-}
-
-void WorldData::addTeamToWorld(TeamPtr team) {
-    if (team) globalTeamRegistry[team->getName()] = team;
-}
-
-TeamPtr WorldData::getTeam(const std::string& teamName) const {
-    auto it = globalTeamRegistry.find(teamName);
-    if (it != globalTeamRegistry.end()) return it->second;
-    return nullptr;
-}
-
-const std::unordered_map<std::string, TeamPtr>& WorldData::getGlobalTeamRegistry() const {
-    return globalTeamRegistry;
-}
-
-void WorldData::addLeagueToWorld(LeaguePtr league) {
-    if (league) activeLeagues.push_back(league);
-}
-
-const std::vector<LeaguePtr>& WorldData::getActiveLeagues() const {
-    return activeLeagues;
-}
-
-LeaguePtr WorldData::getLeague(const std::string& leagueName) const {
-    for (const auto& l : activeLeagues) {
-        if (l->getName() == leagueName) return l;
-    }
-    return nullptr;
-}
-
-// --- UPGRADED SAVE / LOAD CAREER SYSTEM ---
-
-bool WorldData::saveCareer(const std::string& saveFile, const GameCalendar& calendar, TeamPtr playerTeam, LeaguePtr playerLeague) const {
-    json j;
-
-    // 1. Save the Date
-    j["calendar"] = calendar.toJson();
-
-    // 2. Save Manager Identity
-    j["manager"] = {
-        {"teamName", playerTeam ? playerTeam->getName() : ""},
-        {"leagueName", playerLeague ? playerLeague->getName() : ""}
-    };
-
-    // 3. Save all teams
-    json teamsJson = json::array();
-    for (const auto& [name, teamPtr] : globalTeamRegistry) {
-        teamsJson.push_back(teamPtr->toJson());
-    }
-    j["teams"] = teamsJson;
-
-    // 4. Save all active leagues
-    json leaguesJson = json::array();
-    for (const auto& leaguePtr : activeLeagues) {
-        leaguesJson.push_back(leaguePtr->toJson());
-    }
-    j["leagues"] = leaguesJson;
-
-    std::ofstream file(saveFile);
-    if (!file.is_open()) return false;
-    
-    file << j.dump(4); 
-    return true;
-}
-
-bool WorldData::loadCareer(const std::string& saveFile, GameCalendar& calendar, TeamPtr& playerTeam, LeaguePtr& playerLeague) {
-    std::ifstream file(saveFile);
-    if (!file.is_open()) return false;
-
-    try {
-        json j;
-        file >> j;
-
-        globalTeamRegistry.clear();
-        activeLeagues.clear();
-
-        // 1. Restore the Date
-        if (j.contains("calendar")) {
-            calendar.fromJson(j["calendar"]);
-        }
-
-        // 2. Load Teams
-        if (j.contains("teams")) {
-            for (const auto& teamJson : j["teams"]) {
-                auto team = std::make_shared<Team>();
-                team->fromJson(teamJson);
-                addTeamToWorld(team);
             }
         }
+    }
 
-        // 3. Load Leagues
-        if (j.contains("leagues")) {
-            for (const auto& leagueJson : j["leagues"]) {
-                auto league = std::make_shared<League>();
-                league->fromJson(leagueJson, globalTeamRegistry);
-                addLeagueToWorld(league);
+    void WorldData::processJuneThirtiethMidnightWipe() {
+        // Zero out volatile stats for every player in the world, maintaining the Watchlist
+        for (auto& pair : globalPlayerRegistry) {
+            if (pair.second) {
+                pair.second->processMidnightWipe();
             }
         }
-
-        // 4. Restore Manager Identity
-        if (j.contains("manager")) {
-            std::string tName = j["manager"].value("teamName", "");
-            std::string lName = j["manager"].value("leagueName", "");
-            playerTeam = getTeam(tName);
-            playerLeague = getLeague(lName);
-        }
-
-        return (playerTeam != nullptr && playerLeague != nullptr);
-    } catch (const std::exception& e) {
-        std::cerr << "JSON Parsing Error while loading save: " << e.what() << std::endl;
-        return false;
     }
-}
+
+} // namespace FootballManager

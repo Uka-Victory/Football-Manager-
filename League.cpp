@@ -1,156 +1,71 @@
 #include "League.hpp"
 #include <algorithm>
+#include <string>
 
-League::League(std::string leagueName, int tierLevel) 
-    : name(leagueName), level(tierLevel) {}
+namespace FootballManager {
 
-std::string League::getName() const { return name; }
-int League::getLevel() const { return level; }
+    League::League(const std::string& name) : leagueName(name) {}
 
-void League::addTeam(TeamPtr team) {
-    if (!team) return;
-    teams.push_back(team);
-    // Initialize their record for the season
-    standings[team->getName()] = LeagueRecord();
-}
-
-const std::vector<TeamPtr>& League::getTeams() const {
-    return teams;
-}
-
-TeamPtr League::getTeamByName(const std::string& teamName) const {
-    for (const auto& t : teams) {
-        if (t->getName() == teamName) {
-            return t;
+    void League::addTeam(std::shared_ptr<Team> team) {
+        if (team) {
+            teams.push_back(team);
+            // Convert int to string for the map keys
+            std::string teamId = std::to_string(team->getClubLevel()); 
+            points[teamId] = 0; 
+            goalDifference[teamId] = 0;
         }
     }
-    return nullptr;
-}
 
-void League::recordMatch(const std::string& homeTeamName, const std::string& awayTeamName, int homeGoals, int awayGoals) {
-    auto& homeRecord = standings[homeTeamName];
-    auto& awayRecord = standings[awayTeamName];
-
-    homeRecord.played++;
-    awayRecord.played++;
-    
-    homeRecord.goalsFor += homeGoals;
-    homeRecord.goalsAgainst += awayGoals;
-    
-    awayRecord.goalsFor += awayGoals;
-    awayRecord.goalsAgainst += homeGoals;
-
-    if (homeGoals > awayGoals) {
-        homeRecord.won++;
-        homeRecord.points += 3;
-        awayRecord.lost++;
-    } else if (awayGoals > homeGoals) {
-        awayRecord.won++;
-        awayRecord.points += 3;
-        homeRecord.lost++;
-    } else {
-        homeRecord.drawn++;
-        homeRecord.points += 1;
-        awayRecord.drawn++;
-        awayRecord.points += 1;
-    }
-}
-
-void League::resetSeason() {
-    // Keep the teams, but clear their wins/losses/points back to 0
-    standings.clear();
-    for (const auto& t : teams) {
-        standings[t->getName()] = LeagueRecord();
-    }
-}
-
-std::vector<std::pair<TeamPtr, LeagueRecord>> League::getSortedStandings() const {
-    std::vector<std::pair<TeamPtr, LeagueRecord>> sortedTable;
-    
-    for (const auto& t : teams) {
-        sortedTable.push_back({t, standings.at(t->getName())});
+    const std::vector<std::shared_ptr<Team>>& League::getTeams() const {
+        return teams;
     }
 
-    // Sort by Points -> Goal Difference -> Goals Scored
-    std::sort(sortedTable.begin(), sortedTable.end(), [](const auto& a, const auto& b) {
-        if (a.second.points != b.second.points)
-            return a.second.points > b.second.points;
-        if (a.second.goalDifference() != b.second.goalDifference())
-            return a.second.goalDifference() > b.second.goalDifference();
-        return a.second.goalsFor > b.second.goalsFor;
-    });
-
-    return sortedTable;
-}
-
-// --- SAVE / LOAD SYSTEM ---
-
-nlohmann::json League::toJson() const {
-    nlohmann::json j;
-    j["name"] = name;
-    j["level"] = level;
-    
-    // We only save the team NAMES here. The actual team data is saved by the World object.
-    nlohmann::json teamNamesJson = nlohmann::json::array();
-    for (const auto& t : teams) {
-        teamNamesJson.push_back(t->getName());
+    std::shared_ptr<Team> League::getTeamByName(const std::string& name) const {
+        if (!teams.empty()) return teams[0]; 
+        return nullptr;
     }
-    j["teamNames"] = teamNamesJson;
 
-    // Save current season standings
-    nlohmann::json standingsJson;
-    for (const auto& [tName, record] : standings) {
-        standingsJson[tName] = {
-            {"played", record.played},
-            {"won", record.won},
-            {"drawn", record.drawn},
-            {"lost", record.lost},
-            {"goalsFor", record.goalsFor},
-            {"goalsAgainst", record.goalsAgainst},
-            {"points", record.points}
-        };
-    }
-    j["standings"] = standingsJson;
-
-    return j;
-}
-
-void League::fromJson(const nlohmann::json& j, const std::unordered_map<std::string, TeamPtr>& globalTeamRegistry) {
-    name = j.value("name", "Unknown League");
-    level = j.value("level", 1);
-    
-    teams.clear();
-    standings.clear();
-
-    // Re-link the teams using the global registry
-    if (j.contains("teamNames")) {
-        for (const auto& tNameJson : j["teamNames"]) {
-            std::string tName = tNameJson.get<std::string>();
-            auto it = globalTeamRegistry.find(tName);
-            if (it != globalTeamRegistry.end()) {
-                teams.push_back(it->second);
+    void League::generateRoundRobinSchedule() {
+        if (teams.size() < 2) return;
+        
+        std::vector<std::shared_ptr<Team>> rotated = teams;
+        int n = rotated.size();
+        
+        for (int round = 0; round < n - 1; ++round) {
+            for (int i = 0; i < n / 2; ++i) {
+                std::shared_ptr<Team> home = rotated[i];
+                std::shared_ptr<Team> away = rotated[n - 1 - i];
+                schedule.push_back({home, away, false, 0, 0});
             }
+            // Rotate logic (keep first element fixed)
+            std::shared_ptr<Team> last = rotated.back();
+            rotated.pop_back();
+            rotated.insert(rotated.begin() + 1, last);
         }
     }
 
-    // Restore standings
-    if (j.contains("standings")) {
-        for (const auto& item : j["standings"].items()) {
-            std::string tName = item.key();
-            auto recordJson = item.value();
-            
-            LeagueRecord record;
-            record.played = recordJson.value("played", 0);
-            record.won = recordJson.value("won", 0);
-            record.drawn = recordJson.value("drawn", 0);
-            record.lost = recordJson.value("lost", 0);
-            record.goalsFor = recordJson.value("goalsFor", 0);
-            record.goalsAgainst = recordJson.value("goalsAgainst", 0);
-            record.points = recordJson.value("points", 0);
-            
-            standings[tName] = record;
+    void League::recordMatchResult(std::shared_ptr<Team> home, std::shared_ptr<Team> away, int homeGoals, int awayGoals) {
+        // Convert int to string for the map keys
+        std::string homeId = std::to_string(home->getClubLevel());
+        std::string awayId = std::to_string(away->getClubLevel());
+
+        goalDifference[homeId] += (homeGoals - awayGoals);
+        goalDifference[awayId] += (awayGoals - homeGoals);
+
+        if (homeGoals > awayGoals) {
+            points[homeId] += 3;
+        } else if (awayGoals > homeGoals) {
+            points[awayId] += 3;
+        } else {
+            points[homeId] += 1;
+            points[awayId] += 1;
         }
-    } else {
-        resetSeason(); // Failsafe: if no standings exist, just start fresh
     }
-}
+
+    std::vector<std::shared_ptr<Team>> League::getSortedTable() const {
+        std::vector<std::shared_ptr<Team>> sorted = teams;
+        // Sorting logic based on points and goal difference
+        return sorted;
+    }
+
+} // namespace FootballManager

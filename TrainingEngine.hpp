@@ -5,11 +5,8 @@
 
 class TrainingEngine {
 public:
-    TrainingEngine() = default;
-
-    // To be called during the daily Game Loop. 
-    // Recovers fitness, applies micro-growth to attributes, and rolls for training injuries.
-    void processDailyTraining(TeamPtr team);
+    // Processes fitness recovery, injury rolls, and CA/PA growth based on Facility levels
+    static void processDailyTraining(TeamPtr team);
 };
 
 #endif

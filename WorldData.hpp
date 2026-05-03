@@ -1,56 +1,37 @@
-#ifndef WORLDDATA_HPP
-#define WORLDDATA_HPP
-
-#include <string>
-#include <vector>
-#include <unordered_map>
-#include <memory>
-#include "json.hpp"
-#include "League.hpp"
+#pragma once
+#include "Player.hpp"
 #include "Team.hpp"
-#include "GameCalendar.hpp" // Added for time-saving
+#include <vector>
+#include <string>
+#include <memory>
+#include <map>
 
-struct TeamInfo {
-    std::string name;
-    int level;
-};
+namespace FootballManager {
 
-struct LeagueInfo {
-    std::string name;
-    int level;
-    int roundsPerOpponent;
-    std::vector<TeamInfo> teams;
-};
+    class WorldData {
+    private:
+        std::vector<PlayerPtr> freeAgentPool;
+        std::vector<std::string> scoutWatchlist; // Stores Player IDs
+        std::map<std::string, PlayerPtr> globalPlayerRegistry; // Master map of all active players
 
-struct CountryData {
-    std::string country;
-    std::vector<LeagueInfo> leagues;
-};
+    public:
+        WorldData();
 
-class WorldData {
-private:
-    std::unordered_map<std::string, CountryData> baseCountries;
-    std::unordered_map<std::string, TeamPtr> globalTeamRegistry; 
-    std::vector<LeaguePtr> activeLeagues;
+        // Registry & Market
+        void registerPlayer(PlayerPtr player);
+        void addFreeAgent(PlayerPtr player);
+        void removeFreeAgent(const std::string& playerId);
+        PlayerPtr findPlayerGlobally(const std::string& playerId) const;
+        std::vector<PlayerPtr> getFreeAgents() const { return freeAgentPool; }
 
-public:
-    WorldData() = default;
+        // Watchlist
+        void addToWatchlist(const std::string& playerId);
+        void removeFromWatchlist(const std::string& playerId);
+        std::vector<std::string> getWatchlist() const { return scoutWatchlist; }
 
-    bool loadBaseDataFromJson(const std::string& filepath);
-    const std::unordered_map<std::string, CountryData>& getBaseCountries() const;
+        // Temporal Engine Triggers
+        void processAprilFirstGraduation(std::vector<std::shared_ptr<Team>>& allWorldTeams, int currentYear);
+        void processJuneThirtiethMidnightWipe();
+    };
 
-    void addTeamToWorld(TeamPtr team);
-    TeamPtr getTeam(const std::string& teamName) const;
-    const std::unordered_map<std::string, TeamPtr>& getGlobalTeamRegistry() const;
-
-    void addLeagueToWorld(LeaguePtr league);
-    const std::vector<LeaguePtr>& getActiveLeagues() const;
-    LeaguePtr getLeague(const std::string& leagueName) const;
-
-    // --- UPGRADED SAVE / LOAD SYSTEM ---
-    // Now captures time and manager identity
-    bool saveCareer(const std::string& saveFile, const GameCalendar& calendar, TeamPtr playerTeam, LeaguePtr playerLeague) const;
-    bool loadCareer(const std::string& saveFile, GameCalendar& calendar, TeamPtr& playerTeam, LeaguePtr& playerLeague);
-};
-
-#endif
+} // namespace FootballManager

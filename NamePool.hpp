@@ -4,27 +4,18 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <random>
 
 class NamePool {
-public:
-    NamePool();
-    bool loadFromJson(const std::string& filepath);
-    std::string getRandomFirstName(const std::string& nationality) const;
-    std::string getRandomLastName(const std::string& nationality) const;
-    std::string getRandomFullName(const std::string& nationality) const;
-
 private:
     struct NationNames {
-        std::string country;
-        std::vector<std::string> firstNames;
-        std::vector<std::string> lastNames;   // same as firstNames for now
+        std::vector<std::string> names;
     };
-    std::vector<NationNames> nameData;
-    mutable std::mt19937 rng;
-    std::unordered_map<std::string, size_t> countryIndex;
+    std::unordered_map<std::string, NationNames> database;
 
-    size_t getIndex(const std::string& nationality) const;
+public:
+    NamePool() = default;
+    bool loadFromJson(const std::string& filepath);
+    std::string generateName(const std::string& nationality);
 };
 
 #endif

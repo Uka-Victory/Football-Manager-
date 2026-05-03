@@ -1,56 +1,54 @@
-#ifndef TEAM_HPP
-#define TEAM_HPP
-
-#include <string>
+#pragma once
+#include "Player.hpp"
 #include <vector>
 #include <memory>
-#include "json.hpp"
-#include "Player.hpp"
-#include "Facilities.hpp" // NEW: Include Facilities
+#include <map>
+#include <stdexcept>
 
-class Team; 
-using TeamPtr = std::shared_ptr<Team>;
+namespace FootballManager {
 
-class Team {
-private:
-    std::string name;
-    int level;
-    int64_t balance;
-    int64_t transferBudget;
-    int64_t wageBudget;
-    std::vector<PlayerPtr> squad;
-    
-    Facilities facilities; // NEW: Every team owns a Facilities object
+    using PlayerPtr = std::shared_ptr<Player>;
 
-public:
-    Team();
-    Team(std::string teamName, int teamLevel);
+    class Team {
+    private:
+        int clubLevel; // 1-20
+        int wageBudget;
+        int currentWageSpend;
 
-    // Getters
-    std::string getName() const;
-    int getLevel() const;
-    int getTeamOverall() const;
-    
-    // Financials
-    int64_t getBalance() const;
-    int64_t getTransferBudget() const;
-    int64_t getWageBudget() const;
-    void addFunds(int64_t amount);
-    void deductFunds(int64_t amount);
-    void setBudgets(int64_t transfer, int64_t wage);
+        std::vector<PlayerPtr> seniorSquad; // Cap: 25-35, Floor: 18
+        std::vector<PlayerPtr> youthTeam;
+        std::vector<PlayerPtr> academy;
 
-    // Squad Management
-    void addPlayer(PlayerPtr player);
-    void removePlayer(const std::string& playerId);
-    PlayerPtr getPlayerById(const std::string& playerId) const;
-    const std::vector<PlayerPtr>& getPlayers() const;
+        // Manual Depth Chart: Maps a Position to an ordered list of players
+        std::map<Position, std::vector<PlayerPtr>> depthChart;
 
-    // NEW: Facilities Access
-    Facilities& getFacilities();
+    public:
+        Team(int level, int budget);
 
-    // Save/Load
-    nlohmann::json toJson() const;
-    void fromJson(const nlohmann::json& j);
-};
+        // Core Roster Management
+        void addPlayerToSenior(PlayerPtr player);
+        void addPlayerToYouth(PlayerPtr player);
+        void addPlayerToAcademy(PlayerPtr player);
+        
+        void promoteToSenior(PlayerPtr player);
+        void demoteToYouth(PlayerPtr player);
 
-#endif
+        // Auto Squad Logic & Integrity
+        void validateRoster(); // Enforces the 18-player hard floor
+        std::vector<PlayerPtr> getBestXI();
+
+        // Manual Hierarchy Management
+        void setManualRank(Position pos, PlayerPtr player, int newRank);
+        void resetPositionHierarchy(Position pos);
+
+        // April 1st Logic
+        std::vector<PlayerPtr> getGraduatingAcademyPlayers(int currentYear);
+        void offerProfessionalContract(PlayerPtr player, int wage, int duration, bool toSenior);
+        void releasePlayer(PlayerPtr player); // Hooks into WorldData Free Agent Pool externally
+        
+        // Finances
+        int getAvailableWageBudget() const { return wageBudget - currentWageSpend; }
+        int getClubLevel() const { return clubLevel; }
+    };
+
+} // namespace FootballManager

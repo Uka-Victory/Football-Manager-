@@ -1,59 +1,92 @@
-#ifndef PLAYER_HPP
-#define PLAYER_HPP
-
+#pragma once
 #include <string>
-#include <memory>
-#include <cstdint>
-#include "json.hpp"
+#include <vector>
 
-class Player {
-public:
-    std::string uniqueId; // Now crucial for O(1) hash map lookups
-    std::string name;
-    int age;
-    std::string nationality;
-    std::string position;
-    std::string positionRole;
-    
-    int overall;
-    int potential;
-    
-    // Match Stats
-    int appearances;
-    int goals;
-    int assists;
-    int cleanSheets;
-    int yellowCards;
-    int redCards;
-    float averageRating;
-    
-    // Dynamic Status (The "Living World" update)
-    int morale;    // 0-100
-    int fitness;   // 0-100 (100 is fully fit)
-    int form;      // 0-100
-    
-    // Finances (Upgraded to int64_t to prevent overflow with big money)
-    std::string transferStatus;
-    int64_t askingPrice; 
-    int64_t wage;
-    
-    // Constructors
-    Player() = default; // Required for JSON loading
-    Player(std::string id, std::string n, int a, std::string nat, std::string pos, std::string role, int ovr, int pot);
-    
-    // Core Functions
-    std::string shortInfo() const;
-    void updateMatchStats(int goalsScored, int assistsMade, bool cleanSheet, int cards, float rating);
-    void applyFatigue(int minutesPlayed);
-    void recoverFitness(int restDays);
-    
-    // Save/Load System Methods
-    nlohmann::json toJson() const;
-    void fromJson(const nlohmann::json& j);
-};
+namespace FootballManager {
 
-// This is the magic line. Instead of passing massive Player objects around,
-// we will just pass a 'PlayerPtr'. It's incredibly fast and prevents memory leaks.
-using PlayerPtr = std::shared_ptr<Player>;
+    enum class Position { GK, CB, LB, RB, DM, CM, AM, RW, LW, ST };
 
-#endif
+    enum class SquadStatus {
+        EmergencyProspect = 2,
+        Backup = 6,
+        SquadPlayer = 11,
+        ImportantPlayer = 16,
+        StarPlayer = 20
+    };
+
+    struct CurrentSeasonStats {
+        int appearances = 0;
+        int goals = 0;
+        int assists = 0;
+        int cleanSheets = 0;
+        int yellowCards = 0;
+        int redCards = 0;
+        double averageRating = 0.0;
+        double accumulatedXG = 0.0;
+        int keyPasses = 0;
+
+        void reset();
+        void updateRating(double newMatchRating);
+    };
+
+    class Player {
+    private:
+        std::string id;
+        std::string name;
+        int age;
+        Position primaryPosition;
+        
+        // 1-20 Atomic Attributes
+        int finishing;
+        int passing;
+        int tackling;
+        int pace;
+        int vision;
+        int composure;
+        int decisions;
+        int anticipation;
+        int positioning;
+
+        // Hidden Reputations (1-20)
+        int currentReputation;
+        int homeReputation;
+        int worldReputation;
+
+        int weeklyWage;
+        int contractEndYear;
+        int academyJoinYear; 
+        SquadStatus status;
+        int manualRank;      
+        int fitness;         
+
+        CurrentSeasonStats seasonStats;
+
+    public:
+        Player(std::string playerId, std::string playerName, int playerAge, Position pos);
+
+        // Getters
+        std::string getId() const { return id; }
+        std::string getName() const { return name; }
+        Position getPrimaryPosition() const { return primaryPosition; }
+        int getFitness() const { return fitness; }
+        int getManualRank() const { return manualRank; }
+        SquadStatus getStatus() const { return status; }
+        int getAttribute(const std::string& attrName) const;
+        int getWeeklyWage() const { return weeklyWage; }
+        int getAcademyJoinYear() const { return academyJoinYear; }
+        CurrentSeasonStats& getStats() { return seasonStats; }
+
+        // Setters (Including new hooks for the Editor)
+        void setManualRank(int rank) { manualRank = rank; }
+        void setStatus(SquadStatus newStatus) { status = newStatus; }
+        void setFitness(int newFitness) { fitness = newFitness; }
+        void assignContract(int wage, int endYear);
+        void setAcademyJoinYear(int year) { academyJoinYear = year; }
+        void setAttribute(const std::string& attrName, int newValue); // Editor Hook
+
+        double calculateRoleScore(Position role) const;
+        double getSelectionIndex() const;
+        void processMidnightWipe(); 
+    };
+
+} // namespace FootballManager

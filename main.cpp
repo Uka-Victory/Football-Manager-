@@ -1,142 +1,139 @@
+#include "Team.hpp"
+#include "DataHub.hpp"
+#include "WorldData.hpp"
+#include "MatchEngine.hpp"
 #include <iostream>
 #include <string>
-#include <memory>
-#include "WorldData.hpp"
-#include "GameCalendar.hpp"
-#include "TeamGenerator.hpp"
-#include "NamePool.hpp"
-#include "MatchEngine.hpp"
-#include "TransferEngine.hpp"
-#include "Utils.hpp"
-#include "TrainingEngine.hpp"
+#include <vector>
 
-using namespace std;
+using namespace FootballManager;
 
-// --- PROTOTYPES ---
-void runGameLoop(WorldData& world, GameCalendar& calendar, TeamPtr myTeam, LeaguePtr myLeague);
-void createNewGame(WorldData& world, TeamGenerator& generator, GameCalendar& calendar, TeamPtr& myTeam, LeaguePtr& myLeague);
+// Helper to format dates
+std::string getDateString(int month, int day, int year) {
+    return std::to_string(year) + "-" + (month < 10 ? "0" : "") + std::to_string(month) + "-" + (day < 10 ? "0" : "") + std::to_string(day);
+}
 
 int main() {
-    Utils::initRNG(); // Fire up the new Random Number Generator
+    std::cout << "Initializing FootballManager Engine...\n";
 
-    NamePool namePool("first_names.txt", "last_names.txt"); 
-    TeamGenerator generator(namePool);
-    WorldData world;
-    GameCalendar calendar;
+    // 1. Boot up Global Registries
+    WorldData worldData;
+    DataHub dataHub;
+    MatchEngine matchEngine(dataHub);
 
-    TeamPtr myTeam = nullptr;
-    LeaguePtr myLeague = nullptr;
+    // 2. Initialize Clubs (1-20 Scale)
+    auto playerClub = std::make_shared<Team>(15, 500000); // Level 15 Club, 500k wage budget
+    auto aiClub = std::make_shared<Team>(14, 400000);
+    std::vector<std::shared_ptr<Team>> allTeams = {playerClub, aiClub};
 
-    cout << "======================================\n";
-    cout << "     FOOTBALL MANAGER: REBORN       \n";
-    cout << "======================================\n";
-    cout << "1. New Game\n";
-    cout << "2. Load Game\n";
-    cout << "3. Exit\n";
-    cout << "Choice: ";
-    
-    int choice;
-    cin >> choice;
+    // Note: In a full deployment, TeamGenerator would populate these rosters here.
+    // For this engine core, we assume rosters are populated to valid >18 numbers.
+    // playerClub->addPlayerToSenior(std::make_shared<Player>(...));
 
-    if (choice == 1) {
-        createNewGame(world, generator, calendar, myTeam, myLeague);
-        runGameLoop(world, calendar, myTeam, myLeague);
-    } 
-    else if (choice == 2) {
-        // We now pass the references so WorldData populates them perfectly!
-        if (world.loadCareer("save_game.json", calendar, myTeam, myLeague)) {
-            cout << "\nGame Loaded Successfully!\n";
-            runGameLoop(world, calendar, myTeam, myLeague);
-        } else {
-            cout << "\nFailed to load game. Save file may be corrupted or missing.\n";
-        }
-    }
+    // 3. Temporal Engine Variables
+    int currentYear = 2026;
+    int currentMonth = 7; // Starts in July
+    int currentDay = 1;
 
-    return 0;
-}
+    bool gameRunning = true;
 
-void createNewGame(WorldData& world, TeamGenerator& generator, GameCalendar& calendar, TeamPtr& myTeam, LeaguePtr& myLeague) {
-    cout << "\nGenerating New World...\n";
-    
-    myLeague = make_shared<League>("Premier Division", 1);
-    world.addLeagueToWorld(myLeague);
+    // 4. Main Game Loop
+    while (gameRunning) {
+        std::cout << "\n========================================\n";
+        std::cout << "DATE: " << getDateString(currentMonth, currentDay, currentYear) << "\n";
+        std::cout << "WAGE BUDGET: " << playerClub->getAvailableWageBudget() << " remaining\n";
+        std::cout << "========================================\n";
+        std::cout << "[1] Advance 1 Day\n";
+        std::cout << "[2] Simulate Next Match\n";
+        std::cout << "[3] View Senior Squad & Hierarchy\n";
+        std::cout << "[8] View Academy\n";
+        std::cout << "[10] Data Hub\n";
+        std::cout << "[0] Quit\n";
+        std::cout << "Select Option: ";
 
-    string teamNames[] = {"London FC", "Manchester Utd", "Liverpool FC", "Arsenal Blues"};
-    for (const string& name : teamNames) {
-        auto newTeam = make_shared<Team>(name, 1);
-        generator.populateTeam(newTeam); 
-        world.addTeamToWorld(newTeam);   
-        myLeague->addTeam(newTeam);      
-    }
-
-    myTeam = myLeague->getTeamByName("Arsenal Blues"); // Let's manage Arsenal Blues for testing!
-    
-    calendar = GameCalendar(2024, 7, 1); 
-    
-    cout << "World Generation Complete!\n";
-}
-
-void runGameLoop(WorldData& world, GameCalendar& calendar, TeamPtr myTeam, LeaguePtr myLeague) {
-    MatchEngine matchEngine;
-    TransferEngine transferEngine;
-    TrainingEngine trainingEngine; // NEW: Instantiate the Training Engine
-    bool playing = true;
-
-    while (playing) {
-        cout << "\n=== " << calendar.getDateString() << " ===\n";
-        cout << "Manager of: " << myTeam->getName() << "\n";
-        cout << "Balance: £" << myTeam->getBalance() << "\n";
-        cout << "1. Advance 1 Day\n";
-        cout << "2. View Squad\n";
-        cout << "3. View League Table\n";
-        cout << "4. Save Game\n";
-        cout << "5. Quit to Desktop\n";
-        cout << "Choice: ";
-        
         int choice;
-        cin >> choice;
+        if (!(std::cin >> choice)) {
+            std::cin.clear(); std::cin.ignore(10000, '\n'); continue;
+        }
 
-        if (choice == 1) {
-            calendar.advanceDay();
-            
-            // NEW: Run daily training and fitness recovery for the entire world
-            for (const auto& [teamName, teamPtr] : world.getGlobalTeamRegistry()) {
-                trainingEngine.processDailyTraining(teamPtr);
-            }
-            
-            if (calendar.getDay() % 7 == 0) {
-                cout << "\n[Match Day! Simulating fixtures...]\n";
-                auto teams = myLeague->getTeams();
-                matchEngine.simulateMatch(teams[0], teams[1], myLeague);
-                matchEngine.simulateMatch(teams[2], teams[3], myLeague);
-            }
+        switch (choice) {
+            case 1: {
+                // Temporal Progression
+                currentDay++;
+                if (currentDay > 30) { // Simplified 30-day months for calendar speed
+                    currentDay = 1;
+                    currentMonth++;
+                    if (currentMonth > 12) {
+                        currentMonth = 1;
+                        currentYear++;
+                    }
+                }
 
-            if (calendar.isSeasonEnd()) {
-                cout << "\n*** SEASON OVER ***\n";
-                myLeague->resetSeason();
-                cout << "Leagues have been reset for the new year.\n";
+                // Event Trigger: April 1st Graduation
+                if (currentMonth == 4 && currentDay == 1) {
+                    std::cout << "\n*** MANDATORY BOARD ACTION: ACADEMY GRADUATION ***\n";
+                    worldData.processAprilFirstGraduation(allTeams, currentYear);
+                    // UI interaction to sign/release prospects would pause here.
+                    std::cout << "Graduation processing complete. Unsigned players moved to Free Agents.\n";
+                }
+
+                // Event Trigger: June 30th Midnight Wipe
+                if (currentMonth == 6 && currentDay == 30) {
+                    std::cout << "\n*** SEASON END: VOLATILE STAT BUFFER WIPE ***\n";
+                    worldData.processJuneThirtiethMidnightWipe();
+                    dataHub.resetSeasonalData();
+                    std::cout << "All seasonal stats have been reset to zero.\n";
+                }
+                break;
             }
-        } 
-        else if (choice == 2) {
-            cout << "\n--- " << myTeam->getName() << " Squad ---\n";
-            for (const auto& player : myTeam->getPlayers()) {
-                cout << player->shortInfo() << " - Fitness: " << player->fitness << "%\n";
+            case 2: {
+                try {
+                    std::cout << "\n" << matchEngine.generateOppositionBriefing(*aiClub);
+                    std::cout << "Simulating Match...\n";
+                    MatchResult res = matchEngine.simulateMatch(*playerClub, *aiClub);
+                    std::cout << "RESULT: Home " << res.homeGoals << " - " << res.awayGoals << " Away\n";
+                    std::cout << "xG:     Home " << res.homeXG << " - " << res.awayXG << " Away\n";
+                } catch (const std::exception& e) {
+                    std::cout << "MATCH CANCELLED: " << e.what() << "\n";
+                }
+                break;
             }
-        }
-        else if (choice == 3) {
-            cout << "\n--- " << myLeague->getName() << " Table ---\n";
-            cout << "Team\t\tPts\tGD\n";
-            for (const auto& row : myLeague->getSortedStandings()) {
-                cout << row.first->getName() << "\t" << row.second.points << "\t" << row.second.goalDifference() << "\n";
+            case 3: {
+                std::cout << "\n--- SENIOR SQUAD HIERARCHY ---\n";
+                std::cout << "[M] Manage Hierarchy (Feature accessible via UI integration)\n";
+                std::cout << "To swap LB1 and LB2, select player ID and input new Manual Rank.\n";
+                // Roster printing logic goes here
+                break;
             }
-        }
-        else if (choice == 4) {
-            if (world.saveCareer("save_game.json", calendar, myTeam, myLeague)) {
-                cout << "\n>>> Game Saved Successfully! <<<\n";
+            case 10: {
+                std::cout << "\n--- DATA HUB ---\n";
+                std::cout << "Verticality Index: " << dataHub.getVerticalityIndex() << " grid units per pass\n";
+                std::cout << "Clinical Delta: " << dataHub.calculateClinicalDelta(*playerClub) << "\n";
+                
+                std::cout << "\nForensic Grid Failures (Top 5):\n";
+                auto softZones = dataHub.getSoftZones();
+                for (const auto& zone : softZones) {
+                    std::cout << "Coordinate (" << zone.first.first << ", " << zone.first.second << ") - Failures: " << zone.second << "\n";
+                }
+
+                std::cout << "\nHierarchy Conflict Report:\n";
+                auto hReport = dataHub.generateHierarchyReport(*playerClub);
+                for (const auto& rep : hReport) {
+                    if (rep.isConflict) {
+                        std::cout << "WARNING: " << rep.playerName << " (Star Player) is manually ranked dangerously low.\n";
+                    }
+                }
+                break;
             }
-        }
-        else if (choice == 5) {
-            playing = false;
+            case 0:
+                gameRunning = false;
+                break;
+            default:
+                std::cout << "Invalid option.\n";
+                break;
         }
     }
+
+    std::cout << "Engine Shutdown.\n";
+    return 0;
 }

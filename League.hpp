@@ -1,64 +1,41 @@
-#ifndef LEAGUE_HPP
-#define LEAGUE_HPP
-
-#include <string>
-#include <vector>
-#include <map>
-#include <memory>
+#pragma once
 #include "Team.hpp"
-#include "json.hpp"
+#include <vector>
+#include <string>
+#include <memory>
+#include <unordered_map>
 
-// Tracks a team's performance for the current season
-struct LeagueRecord {
-    int played = 0;
-    int won = 0;
-    int drawn = 0;
-    int lost = 0;
-    int goalsFor = 0;
-    int goalsAgainst = 0;
-    int points = 0;
+namespace FootballManager {
 
-    int goalDifference() const { return goalsFor - goalsAgainst; }
-};
+    struct Fixture {
+        std::shared_ptr<Team> homeTeam;
+        std::shared_ptr<Team> awayTeam;
+        bool isPlayed;
+        int homeScore;
+        int awayScore;
+    };
 
-class League {
-private:
-    std::string name;
-    int level; // 1 = Top Flight (e.g. Premier League), 2 = Second Tier, etc.
-    
-    // Using Smart Pointers so the League just points to the global teams
-    std::vector<TeamPtr> teams;
-    
-    // Maps a Team's Name to their current season record
-    std::map<std::string, LeagueRecord> standings; 
+    class League {
+    private:
+        std::string leagueName;
+        std::vector<std::shared_ptr<Team>> teams;
+        std::vector<Fixture> schedule;
+        
+        // League Table Tracking
+        std::unordered_map<std::string, int> points;
+        std::unordered_map<std::string, int> goalDifference;
 
-public:
-    League() = default;
-    League(std::string leagueName, int tierLevel);
+    public:
+        League(const std::string& name);
 
-    // Getters
-    std::string getName() const;
-    int getLevel() const;
+        void addTeam(std::shared_ptr<Team> team);
+        const std::vector<std::shared_ptr<Team>>& getTeams() const;
+        std::shared_ptr<Team> getTeamByName(const std::string& name) const;
+        
+        void generateRoundRobinSchedule();
+        void recordMatchResult(std::shared_ptr<Team> home, std::shared_ptr<Team> away, int homeGoals, int awayGoals);
+        
+        std::vector<std::shared_ptr<Team>> getSortedTable() const;
+    };
 
-    // Team Management
-    void addTeam(TeamPtr team);
-    const std::vector<TeamPtr>& getTeams() const;
-    TeamPtr getTeamByName(const std::string& teamName) const;
-
-    // Season & Match Logic
-    void recordMatch(const std::string& homeTeamName, const std::string& awayTeamName, int homeGoals, int awayGoals);
-    void resetSeason(); // Crucial for Season Rollover
-    
-    // Returns the table sorted by Points, then Goal Difference, then Goals Scored
-    std::vector<std::pair<TeamPtr, LeagueRecord>> getSortedStandings() const;
-
-    // Save/Load System
-    nlohmann::json toJson() const;
-    // Note: We pass a global team registry so the league can reconnect its pointers to the right teams!
-    void fromJson(const nlohmann::json& j, const std::unordered_map<std::string, TeamPtr>& globalTeamRegistry);
-};
-
-// Smart pointer typedef for Leagues
-using LeaguePtr = std::shared_ptr<League>;
-
-#endif
+} // namespace FootballManager

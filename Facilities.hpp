@@ -1,40 +1,28 @@
-#ifndef FACILITIES_HPP
-#define FACILITIES_HPP
+#pragma once
 
-#include "json.hpp"
-#include <algorithm>
+namespace FootballManager {
 
-class Facilities {
-private:
-    int trainingLevel;  // Boosts daily attribute growth
-    int academyLevel;   // Boosts youth intake quality/potential
-    int stadiumLevel;   // Boosts matchday revenue
-    int infirmaryLevel; // Boosts daily fitness recovery & prevents injuries
+    class Facilities {
+    private:
+        int trainingLevel; // 1-20
+        int academyLevel;  // 1-20
+        int stadiumCapacity;
+        int infirmaryLevel; // 1-20
 
-    const int MAX_LEVEL = 10;
+    public:
+        Facilities(int startTraining, int startAcademy, int startStadium, int startInfirmary);
 
-public:
-    Facilities();
-    Facilities(int startTraining, int startAcademy, int startStadium, int startInfirmary);
+        // Required Declarations
+        float getFatigueDecayModifier() const;
+        bool upgradeTraining();
+        bool upgradeAcademy();
+        bool upgradeStadium();
+        bool upgradeInfirmary();
+        
+        // Getters
+        int getTrainingLevel() const { return trainingLevel; }
+        int getAcademyLevel() const { return academyLevel; }
+        int getStadiumCapacity() const { return stadiumCapacity; }
+    };
 
-    // Getters
-    int getTrainingLevel() const;
-    int getAcademyLevel() const;
-    int getStadiumLevel() const;
-    int getInfirmaryLevel() const;
-
-    // Upgrades (Returns false if already at max level)
-    bool upgradeTraining();
-    bool upgradeAcademy();
-    bool upgradeStadium();
-    bool upgradeInfirmary();
-
-    // Get Upgrade Costs (Scales exponentially with the current level)
-    int64_t getUpgradeCost(int currentLevel) const;
-
-    // Save/Load
-    nlohmann::json toJson() const;
-    void fromJson(const nlohmann::json& j);
-};
-
-#endif
+} // namespace FootballManager
