@@ -1,4 +1,3 @@
-WorldHistory.cpp
 #include "WorldHistory.hpp"
 #include <algorithm>
 

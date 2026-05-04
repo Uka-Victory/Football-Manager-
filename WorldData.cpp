@@ -13,11 +13,9 @@ namespace FootballManager {
 
     void WorldData::addFreeAgent(PlayerPtr player) {
         if (player) {
-            // Ensure they aren't already in the pool
             auto it = std::find(freeAgentPool.begin(), freeAgentPool.end(), player);
             if (it == freeAgentPool.end()) {
-                // Clear contract data
-                player->assignContract(0, 0); 
+                player->assignContract(0, 0);
                 freeAgentPool.push_back(player);
             }
         }
@@ -33,9 +31,7 @@ namespace FootballManager {
 
     PlayerPtr WorldData::findPlayerGlobally(const std::string& playerId) const {
         auto it = globalPlayerRegistry.find(playerId);
-        if (it != globalPlayerRegistry.end()) {
-            return it->second;
-        }
+        if (it != globalPlayerRegistry.end()) return it->second;
         return nullptr;
     }
 
@@ -52,29 +48,32 @@ namespace FootballManager {
         );
     }
 
-    void WorldData::processAprilFirstGraduation(std::vector<std::shared_ptr<Team>>& allWorldTeams, int currentYear) {
+    void WorldData::processAprilFirstGraduation(
+            std::vector<std::shared_ptr<Team>>& allWorldTeams, int currentYear) {
+
         for (auto& team : allWorldTeams) {
-            std::vector<PlayerPtr> graduates = team->getGraduatingAcademyPlayers(currentYear);
-            
-            for (auto& prospect : graduates) {
-                // AI Logic for AI Teams: Sign if Potential is high, else release
-                // User team logic will be intercepted by main.cpp before this auto-resolves.
-                
-                // For engine fallback: if they hit this loop without a contract, they are released.
-                if (prospect->getWeeklyWage() == 0) {
-                    team->releasePlayer(prospect);
-                    addFreeAgent(prospect);
+            // Fix: Team has no getGraduatingAcademyPlayers().
+            // Instead, scan the senior squad for players whose academy
+            // join year means they've served the 1-year residency rule.
+            std::vector<PlayerPtr> toRelease;
+            for (const auto& player : team->getSeniorSquad()) {
+                int joinYear = player->getAcademyJoinYear();
+                // joinYear == 0 means they weren't an academy prospect
+                if (joinYear != 0 && (currentYear - joinYear) >= 1
+                        && player->getWeeklyWage() == 0) {
+                    toRelease.push_back(player);
                 }
+            }
+            for (auto& prospect : toRelease) {
+                team->releasePlayer(prospect);
+                addFreeAgent(prospect);
             }
         }
     }
 
     void WorldData::processJuneThirtiethMidnightWipe() {
-        // Zero out volatile stats for every player in the world, maintaining the Watchlist
-        for (auto& pair : globalPlayerRegistry) {
-            if (pair.second) {
-                pair.second->processMidnightWipe();
-            }
+        for (auto& [id, player] : globalPlayerRegistry) {
+            if (player) player->processMidnightWipe();
         }
     }
 
