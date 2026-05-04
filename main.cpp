@@ -17,6 +17,8 @@
 #include "Manager.hpp"
 #include "WorldHistory.hpp"
 #include "DataHub.hpp"
+#include "ContinentalManager.hpp"
+#include "InternationalManager.hpp"
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -34,6 +36,9 @@ WorldHistoryPtr worldHistory = make_shared<WorldHistory>();
 DataHub dataHub;
 TeamPtr myClub;
 GameCalendar calendar(2025, 7, 1);
+
+ContinentalManager continentalManager(Continent::Europe);
+InternationalManager internationalManager;
 
 const string SAVE_FILE = "save_game.json";
 
@@ -92,8 +97,12 @@ void generateWorld() {
     namePool.load("countries_data.txt");
     teamGenerator = TeamGenerator(namePool);
 
+    // Collect all country names for national teams
+    vector<string> allCountryNames;
+
     const auto& countries = worldData.getBaseCountries();
     for (const auto& country : countries) {
+        allCountryNames.push_back(country.name);
         for (const auto& leagueInfo : country.leagues) {
             auto league = make_shared<League>(leagueInfo.name, country.name, leagueInfo.tier);
             league->setPromotionSpots(leagueInfo.promotionSpots);
@@ -109,11 +118,17 @@ void generateWorld() {
                 for (auto& p : team->getSeniorSquad()) allPlayers[p->getUniqueId()] = p;
                 for (auto& p : team->getYouthSquad())   allPlayers[p->getUniqueId()] = p;
             }
-            league->generateSchedule(calendar.getYear(), 8, 1); // season starts Aug 1
+            league->generateSchedule(calendar.getYear(), 8, 1);
             allLeagues.push_back(league);
         }
     }
     cout << "Generated " << allLeagues.size() << " leagues with " << allTeams.size() << " clubs.\n";
+
+    // Generate national teams
+    internationalManager.generateNationalTeams(allPlayers, allCountryNames);
+
+    // Set up initial continental competitions (qualification from current season's leagues)
+    // For new game, we can delay until first season end, or set up with placeholders.
 }
 
 // ========== CLUB SELECTION ==========
@@ -130,7 +145,6 @@ void selectClub() {
     int li; cin >> li;
     if (li < 1 || li > (int)country.leagues.size()) { cout << "Invalid, defaulting to first league.\n"; li = 1; }
 
-    // Find the corresponding League object
     LeaguePtr chosenLeague = nullptr;
     for (auto& league : allLeagues) {
         if (league->getName() == country.leagues[li - 1].name && league->getCountry() == country.name) {
@@ -154,42 +168,78 @@ void selectClub() {
 void advanceDay() {
     string today = calendar.getDateString();
 
-    // 1. Process fixtures
+    // 1. Process all fixtures (domestic leagues + continental)
+    // Domestic leagues
     for (auto& league : allLeagues) {
         auto fixtures = league->getFixturesForDate(today);
         for (auto& fix : fixtures) {
             if (fix.played) continue;
-
             auto res = MatchEngine::simulateMatch(fix.homeTeam, fix.awayTeam);
             fix.homeGoals = res.homeGoals;
             fix.awayGoals = res.awayGoals;
             fix.played = true;
-
             league->recordMatchResult(today, fix);
             MatchEngine::applyResultToTeams(fix.homeTeam, fix.awayTeam, res, today);
-
-            // Update head‑to‑head
             fix.homeTeam->updateHeadToHead(fix.awayTeam->getName(),
                 fix.homeGoals, fix.awayGoals,
                 fix.homeTeam->getSeniorSquad(), res.playerStats);
             fix.awayTeam->updateHeadToHead(fix.homeTeam->getName(),
                 fix.awayGoals, fix.homeGoals,
                 fix.awayTeam->getSeniorSquad(), res.playerStats);
-
-            // Update data hub
             dataHub.ingestMatch(fix, res);
-
             cout << fix.homeTeam->getName() << " " << fix.homeGoals << " - "
                  << fix.awayGoals << " " << fix.awayTeam->getName() << "\n";
         }
     }
 
-    // 2. Training recovery (all clubs)
+    // Continental fixtures
+    for (auto& comp : {"UCL", "UEL", "UECL"}) {
+        const auto& contFixtures = continentalManager.getLeaguePhaseFixtures(comp);
+        for (auto& fix : contFixtures) {
+            if (fix.date == today && !fix.played) {
+                auto res = MatchEngine::simulateMatch(fix.homeTeam, fix.awayTeam);
+                const_cast<Fixture&>(fix).homeGoals = res.homeGoals;
+                const_cast<Fixture&>(fix).awayGoals = res.awayGoals;
+                const_cast<Fixture&>(fix).played = true;
+                // Update continental points/GD table (done inside ContinentalManager's record methods, but we call later)
+                // For now, the result is stored; coefficient update happens at season end.
+                cout << "[CONT] " << fix.homeTeam->getName() << " " << res.homeGoals << " - "
+                     << res.awayGoals << " " << fix.awayTeam->getName() << "\n";
+            }
+        }
+    }
+
+    // International qualifying / tournament fixtures
+    for (auto tournament : {InternationalTournament::WorldCup, InternationalTournament::UEFAEuros,
+                            InternationalTournament::CopaAmerica, InternationalTournament::AFCON}) {
+        for (const auto& qfix : internationalManager.getQualifyingFixtures(tournament)) {
+            if (qfix.date == today && !qfix.played) {
+                // Simulate using a simple random score (since we don't have full rosters in QualifyingFixture)
+                int homeG = Utils::randInt(0, 3);
+                int awayG = Utils::randInt(0, 3);
+                // Record result
+                internationalManager.recordTournamentResult(tournament, qfix.homeCountry, qfix.awayCountry,
+                                                            homeG, awayG, today);
+                cout << "[INTL] " << qfix.homeCountry << " " << homeG << " - " << awayG << " " << qfix.awayCountry << "\n";
+            }
+        }
+        for (const auto& tfix : internationalManager.getTournamentFixtures(tournament)) {
+            if (tfix.date == today && !tfix.played) {
+                int homeG = Utils::randInt(0, 3);
+                int awayG = Utils::randInt(0, 3);
+                internationalManager.recordTournamentResult(tournament, tfix.homeCountry, tfix.awayCountry,
+                                                            homeG, awayG, today);
+                cout << "[INTL FINAL] " << tfix.homeCountry << " " << homeG << " - " << awayG << " " << tfix.awayCountry << "\n";
+            }
+        }
+    }
+
+    // 2. Training recovery
     for (auto& league : allLeagues)
         for (auto& team : league->getTeams())
             TrainingEngine::processDailyTraining(team);
 
-    // 3. Injury/suspension recovery (all players)
+    // 3. Injury/suspension recovery
     for (auto& kv : allPlayers) {
         kv.second->recoverDay();
         kv.second->reduceSuspension();
@@ -198,25 +248,38 @@ void advanceDay() {
 
     // 4. Weekly financial processing (Sunday)
     if (calendar.getWeekday() == 0) {
-        // Finances::processWeekly(myClub);  // placeholder
+        // placeholder for Finances::processWeekly
     }
 
-    // 5. Check end‑of‑season
+    // 5. End‑of‑season
     if (calendar.isSeasonEnd()) {
         cout << "\n===== END OF SEASON =====\n";
+
         // League end‑of‑season + promotion/relegation
         for (size_t i = 0; i < allLeagues.size(); ++i) {
             League* lower = (i + 1 < allLeagues.size()) ? allLeagues[i + 1].get() : nullptr;
             allLeagues[i]->endSeason(lower);
         }
+
         // Awards & history
         worldHistory->computeSeasonAwards(allLeagues, allPlayers);
         worldHistory->saveToFile("history.json");
 
-        // Youth intake (academy graduation)
+        // Update country & club coefficients
+        continentalManager.updateCountryCoefficients(allLeagues, allTeams);
+        continentalManager.updateClubCoefficients(allTeams);
+
+        // Set up next season's continental competitions
+        vector<string> uclQualified = continentalManager.getQualifiedClubs("UCL", allLeagues, calendar.getYear());
+        vector<string> uelQualified = continentalManager.getQualifiedClubs("UEL", allLeagues, calendar.getYear());
+        vector<string> ueclQualified = continentalManager.getQualifiedClubs("UECL", allLeagues, calendar.getYear());
+        continentalManager.setupChampionsLeague(uclQualified, allTeams, calendar);
+        continentalManager.setupEuropaLeague(uelQualified, allTeams, calendar);
+        continentalManager.setupConferenceLeague(ueclQualified, allTeams, calendar);
+
+        // Youth intake
         for (auto& league : allLeagues) {
             for (auto& team : league->getTeams()) {
-                // Generate new academy graduates
                 int intakeCount = 2 + (team->getFacilities().academy / 4);
                 for (int j = 0; j < intakeCount; ++j) {
                     auto p = teamGenerator.generateYouthPlayer(team->getCountry(),
@@ -224,16 +287,12 @@ void advanceDay() {
                     team->addToAcademy(p);
                     allPlayers[p->getUniqueId()] = p;
                 }
-                // Academy → contract decision (in future, inbox; here auto‑accept top 2)
                 vector<PlayerPtr> graduates = team->getAcademy();
                 vector<string> offered;
                 for (size_t k = 0; k < min((size_t)2, graduates.size()); ++k)
                     offered.push_back(graduates[k]->getUniqueId());
                 vector<PlayerPtr> released;
                 team->processAcademyGraduation(offered, released);
-                for (auto& r : released) {
-                    // Move to free agents (we keep them in allPlayers for now)
-                }
             }
         }
 
@@ -243,6 +302,16 @@ void advanceDay() {
 
         // Reset data hub
         dataHub.resetSeason();
+
+        // Set up international qualifiers for the new cycle if needed
+        int nextYear = calendar.getYear() + 1;
+        internationalManager.setYear(nextYear);
+        if (internationalManager.isTournamentYear(InternationalTournament::WorldCup)) {
+            internationalManager.setupWorldCupQualifiers(calendar);
+        }
+        if (internationalManager.isTournamentYear(InternationalTournament::UEFAEuros)) {
+            internationalManager.setupEurosQualifiers(calendar);
+        }
     }
 
     // 6. Advance calendar
@@ -254,7 +323,7 @@ void saveGame() {
     json j;
     j["calendar"] = calendar.toJson();
     j["userManager"] = userManager->toJson();
-    j["myClubId"] = myClub ? myClub->getName() : "";
+    j["myClubName"] = myClub ? myClub->getName() : "";
     j["leagues"] = json::array();
     for (auto& l : allLeagues) j["leagues"].push_back(l->toJson());
     j["teams"] = json::array();
@@ -267,6 +336,8 @@ void saveGame() {
         j["players"].push_back(pj);
     }
     j["worldHistory"] = worldHistory->toJson();
+    j["continentalManager"] = continentalManager.toJson();
+    j["internationalManager"] = internationalManager.toJson();
     ofstream out(SAVE_FILE);
     out << j.dump(2);
     cout << "Game saved.\n";
@@ -323,11 +394,13 @@ void loadGame() {
         }
     }
 
-    string myClubName = j.value("myClubId", "");
+    string myClubName = j.value("myClubName", "");
     myClub = allTeams.count(myClubName) ? allTeams[myClubName] : nullptr;
     if (!myClub && !allTeams.empty()) myClub = allTeams.begin()->second;
 
     worldHistory->fromJson(j.value("worldHistory", json::object()));
+    continentalManager.fromJson(j.value("continentalManager", json::object()));
+    internationalManager.fromJson(j.value("internationalManager", json::object()));
 
     cout << "Game loaded.\n";
 }
