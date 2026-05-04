@@ -1,79 +1,47 @@
+// GameCalendar.cpp
 #include "GameCalendar.hpp"
 #include <sstream>
 #include <iomanip>
 
-// Default start date: July 1st, 2024
-GameCalendar::GameCalendar() : year(2024), month(7), day(1) {} 
+GameCalendar::GameCalendar(int y, int m, int d) : year(y), month(m), day(d) {}
 
-GameCalendar::GameCalendar(int startYear, int startMonth, int startDay) 
-    : year(startYear), month(startMonth), day(startDay) {}
-
-bool GameCalendar::isLeapYear(int y) const {
-    // A year is a leap year if it is divisible by 4, 
-    // except for end-of-century years which must be divisible by 400.
-    return (y % 4 == 0 && y % 100 != 0) || (y % 400 == 0);
-}
-
-int GameCalendar::getDaysInMonth(int m, int y) const {
-    switch (m) {
-        case 4: case 6: case 9: case 11: // Thirty days hath September, April, June, and November...
-            return 30;
-        case 2: // February
-            return isLeapYear(y) ? 29 : 28;
-        default: // All the rest have 31
-            return 31;
-    }
-}
-
-void GameCalendar::advanceDay() {
+void GameCalendar::advanceOneDay() {
     day++;
-    if (day > getDaysInMonth(month, year)) {
-        day = 1;
-        month++;
-        if (month > 12) {
-            month = 1;
-            year++;
-        }
-    }
+    if (day > daysInMonth(month, year)) { day = 1; month++; }
+    if (month > 12) { month = 1; year++; }
 }
 
-void GameCalendar::advanceDays(int days) {
-    for (int i = 0; i < days; ++i) {
-        advanceDay();
-    }
+std::string GameCalendar::getDateString() const {
+    std::ostringstream oss;
+    oss << year << "-" << std::setfill('0') << std::setw(2) << month
+        << "-" << std::setw(2) << day;
+    return oss.str();
 }
 
 int GameCalendar::getYear() const { return year; }
-int GameCalendar::getMonth() const { return month; }
-int GameCalendar::getDay() const { return day; }
 
-std::string GameCalendar::getDateString() const {
-    std::stringstream ss;
-    // Format visually as YYYY-MM-DD
-    ss << year << "-" 
-       << std::setw(2) << std::setfill('0') << month << "-" 
-       << std::setw(2) << std::setfill('0') << day;
-    return ss.str();
+int GameCalendar::getWeekday() const {
+    // Simple Zeller-like algorithm for 2025-01-01 = Wednesday (3)
+    static int t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+    int y = year - (month < 3);
+    return (y + y/4 - y/100 + y/400 + t[month-1] + day) % 7;
 }
 
 bool GameCalendar::isSeasonEnd() const {
-    // The global football season ends on June 30th.
     return (month == 6 && day == 30);
 }
 
-// --- SAVE / LOAD SYSTEM ---
-
-nlohmann::json GameCalendar::toJson() const {
-    return {
-        {"year", year},
-        {"month", month},
-        {"day", day}
-    };
+int GameCalendar::daysInMonth(int m, int y) {
+    static const int md[12] = {31,28,31,30,31,30,31,31,30,31,30,31};
+    int d = md[m-1];
+    if (m == 2 && (y % 4 == 0 && (y % 100 != 0 || y % 400 == 0))) d = 29;
+    return d;
 }
 
-void GameCalendar::fromJson(const nlohmann::json& j) {
-    // If the save file is missing a date for some reason, default to start date
-    year = j.value("year", 2024);
-    month = j.value("month", 7);
-    day = j.value("day", 1);
+json GameCalendar::toJson() const {
+    return {{"year", year}, {"month", month}, {"day", day}};
+}
+
+void GameCalendar::fromJson(const json& j) {
+    year = j.at("year"); month = j.at("month"); day = j.at("day");
 }

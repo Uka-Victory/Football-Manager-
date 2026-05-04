@@ -1,80 +1,52 @@
+// WorldData.cpp
 #include "WorldData.hpp"
-#include <algorithm>
+#include <fstream>
+#include <iostream>
 
-namespace FootballManager {
+bool WorldData::load(const std::string& filename) {
+    std::ifstream in(filename);
+    if (!in) return false;
+    json j;
+    in >> j;
 
-    WorldData::WorldData() {}
+    m_countries.clear();
+    if (!j.contains("countries") || !j["countries"].is_array()) return false;
 
-    void WorldData::registerPlayer(PlayerPtr player) {
-        if (player) {
-            globalPlayerRegistry[player->getId()] = player;
-        }
-    }
-
-    void WorldData::addFreeAgent(PlayerPtr player) {
-        if (player) {
-            auto it = std::find(freeAgentPool.begin(), freeAgentPool.end(), player);
-            if (it == freeAgentPool.end()) {
-                player->assignContract(0, 0);
-                freeAgentPool.push_back(player);
-            }
-        }
-    }
-
-    void WorldData::removeFreeAgent(const std::string& playerId) {
-        freeAgentPool.erase(
-            std::remove_if(freeAgentPool.begin(), freeAgentPool.end(),
-                [&playerId](const PlayerPtr& p) { return p->getId() == playerId; }),
-            freeAgentPool.end()
-        );
-    }
-
-    PlayerPtr WorldData::findPlayerGlobally(const std::string& playerId) const {
-        auto it = globalPlayerRegistry.find(playerId);
-        if (it != globalPlayerRegistry.end()) return it->second;
-        return nullptr;
-    }
-
-    void WorldData::addToWatchlist(const std::string& playerId) {
-        if (std::find(scoutWatchlist.begin(), scoutWatchlist.end(), playerId) == scoutWatchlist.end()) {
-            scoutWatchlist.push_back(playerId);
-        }
-    }
-
-    void WorldData::removeFromWatchlist(const std::string& playerId) {
-        scoutWatchlist.erase(
-            std::remove(scoutWatchlist.begin(), scoutWatchlist.end(), playerId),
-            scoutWatchlist.end()
-        );
-    }
-
-    void WorldData::processAprilFirstGraduation(
-            std::vector<std::shared_ptr<Team>>& allWorldTeams, int currentYear) {
-
-        for (auto& team : allWorldTeams) {
-            // Fix: Team has no getGraduatingAcademyPlayers().
-            // Instead, scan the senior squad for players whose academy
-            // join year means they've served the 1-year residency rule.
-            std::vector<PlayerPtr> toRelease;
-            for (const auto& player : team->getSeniorSquad()) {
-                int joinYear = player->getAcademyJoinYear();
-                // joinYear == 0 means they weren't an academy prospect
-                if (joinYear != 0 && (currentYear - joinYear) >= 1
-                        && player->getWeeklyWage() == 0) {
-                    toRelease.push_back(player);
+    for (const auto& cj : j["countries"]) {
+        CountryInfo ci;
+        ci.name = cj.at("name").get<std::string>();
+        if (cj.contains("leagues")) {
+            for (const auto& lj : cj["leagues"]) {
+                LeagueInfo li;
+                li.name = lj.at("name").get<std::string>();
+                li.tier = lj.value("tier", 1);
+                li.level = lj.value("level", 10);
+                li.roundsPerOpponent = lj.value("roundsPerOpponent", 2);
+                li.promotionSpots = lj.value("promotionSpots", 3);
+                li.relegationSpots = lj.value("relegationSpots", 3);
+                if (lj.contains("teams")) {
+                    for (const auto& tj : lj["teams"]) {
+                        TeamInfo ti;
+                        ti.name = tj.at("name").get<std::string>();
+                        ti.level = tj.value("level", li.level);
+                        ti.country = ci.name;
+                        ti.seniorCount = 22;
+                        ti.youthCount = 8;
+                        ti.primaryColour = tj.value("primaryColour", "Red");
+                        ti.secondaryColour = tj.value("secondaryColour", "White");
+                        ti.stadium = tj.value("stadium", ti.name + " Stadium");
+                        ti.founded = tj.value("founded", 1900);
+                        li.teams.push_back(ti);
+                    }
                 }
-            }
-            for (auto& prospect : toRelease) {
-                team->releasePlayer(prospect);
-                addFreeAgent(prospect);
+                ci.leagues.push_back(li);
             }
         }
+        m_countries.push_back(ci);
     }
+    return !m_countries.empty();
+}
 
-    void WorldData::processJuneThirtiethMidnightWipe() {
-        for (auto& [id, player] : globalPlayerRegistry) {
-            if (player) player->processMidnightWipe();
-        }
-    }
-
-} // namespace FootballManager
+const std::vector<CountryInfo>& WorldData::getBaseCountries() const {
+    return m_countries;
+}

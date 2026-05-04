@@ -1,21 +1,15 @@
+// TeamGenerator.hpp
 #pragma once
 #include "Team.hpp"
 #include "NamePool.hpp"
-#include "Player.hpp"
+#include "WorldData.hpp"
 #include <memory>
-#include <string>
 
-namespace FootballManager {
-
-    class TeamGenerator {
-    public:
-        static std::shared_ptr<Player> generatePlayer(const std::string& teamCountry,
-                                                       Position pos,
-                                                       int ageMin, int ageMax,
-                                                       int baseLevel,
-                                                       NamePool& namePool);
-
-        static void populateTeam(std::shared_ptr<Team> team, int squadSize, NamePool& namePool);
-    };
-
-} // namespace FootballManager
+class TeamGenerator {
+public:
+    TeamGenerator(const NamePool& np) : namePool(np) {}
+    std::shared_ptr<Team> generateTeam(const TeamInfo& info, int level);
+    std::shared_ptr<Player> generateYouthPlayer(const std::string& country, int academyLevel);
+private:
+    const NamePool& namePool;
+};

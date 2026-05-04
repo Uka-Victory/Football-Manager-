@@ -1,39 +1,20 @@
-#ifndef GAMECALENDAR_HPP
-#define GAMECALENDAR_HPP
-
+// GameCalendar.hpp
+#pragma once
 #include <string>
 #include "json.hpp"
+using json = nlohmann::json;
 
 class GameCalendar {
-private:
-    int year;
-    int month;
-    int day;
-    
-    // Internal safety checks to prevent invalid dates
-    int getDaysInMonth(int m, int y) const;
-    bool isLeapYear(int y) const;
-
 public:
-    GameCalendar();
-    GameCalendar(int startYear, int startMonth, int startDay);
-
-    // Progression
-    void advanceDay();
-    void advanceDays(int days);
-
-    // Getters
-    int getYear() const;
-    int getMonth() const;
-    int getDay() const;
+    GameCalendar(int y = 2025, int m = 7, int d = 1);
+    void advanceOneDay();
     std::string getDateString() const;
-    
-    // Season Rollover Trigger
-    bool isSeasonEnd() const; // Returns true if the date hits June 30th
-
-    // Save/Load System
-    nlohmann::json toJson() const;
-    void fromJson(const nlohmann::json& j);
+    int getYear() const;
+    int getWeekday() const; // 0=Sunday
+    bool isSeasonEnd() const; // June 30
+    json toJson() const;
+    void fromJson(const json& j);
+private:
+    int year, month, day;
+    static const int daysInMonth(int m, int y);
 };
-
-#endif

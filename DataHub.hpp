@@ -1,49 +1,144 @@
+// DataHub.hpp
 #pragma once
-#include "Team.hpp"
-#include "WorldData.hpp"
-#include <map>
 #include <string>
 #include <vector>
-#include <utility>
+#include <map>
+#include <memory>
+#include "Player.hpp"
+#include "Team.hpp"
+#include "League.hpp"
+#include "MatchEngine.hpp"
 
-namespace FootballManager {
+// ========== OPPONENT REPORT ==========
+struct OpponentStyleProfile {
+    double possessionAvg = 50.0;
+    double passDirectness = 50.0;       // % short vs long
+    double pressingIntensity = 50.0;
+    double crossingFrequency = 5.0;     // per match
+    double avgShotDistance = 17.0;      // yards
+    double defensiveLineHeight = 40.0;  // avg column
+};
 
-    struct HierarchyReport {
-        std::string playerName;
-        Position pos;
-        SquadStatus status;
-        int manualRank;
-        double averageRating;
-        bool isConflict; // True if a Star Player is manually ranked low
-    };
+struct OpponentKeyPlayer {
+    std::string playerId;
+    std::string name;
+    std::string role;          // "Top Scorer", "Playmaker", etc.
+    double statValue = 0.0;
+    std::string statLabel;     // "goals", "xT", etc.
+};
 
-    class DataHub {
-    private:
-        // 12x8 Grid tracking for failures (x: 1-12, y: 1-8)
-        std::map<std::pair<int, int>, int> zoneFailures;
-        int totalPasses;
-        int forwardGridUnitsProgressed;
+struct OpponentWeakness {
+    std::string description;   // e.g. "Left flank vulnerable"
+    std::string positionGroup;
+    double severity = 1.0;
+};
 
-    public:
-        DataHub();
+struct OpponentReport {
+    std::string opponentTeamName;
+    OpponentStyleProfile style;
+    std::vector<OpponentKeyPlayer> keyPlayers;
+    std::vector<OpponentWeakness> weaknesses;
+    int matchesAnalysed = 0;
+};
 
-        // 1. Tactical Forensics
-        void logDuelFailure(int x, int y);
-        void logPassProgression(int startX, int endX);
-        std::vector<std::pair<std::pair<int, int>, int>> getSoftZones() const; // Returns worst grid coordinates
-        double getVerticalityIndex() const; // Forward units per pass
+// ========== OWN TEAM ANALYSIS ==========
+struct SquadOverviewEntry {
+    std::string playerId;
+    std::string name;
+    int minutesPlayed = 0;
+    int goals = 0, assists = 0;
+    double xg = 0.0, xa = 0.0, xt = 0.0;
+    double avgRating = 0.0;
+    int progressivePasses = 0, tacklesWon = 0, interceptions = 0;
+    int cards = 0;
+};
 
-        // 2. Performance Analytics
-        double calculateClinicalDelta(Team& team) const; // Actual Goals - Expected Goals (xG)
-        std::vector<PlayerPtr> getSlumpingPlayers(Team& team) const; // Avg Rating < 6.4
+struct PositionalAnalysis {
+    std::string positionGroup;
+    int playerCount = 0;
+    double avgRating = 0.0;
+    bool weaknessFlag = false;
+};
 
-        // 3. Hierarchy Alignment
-        std::vector<HierarchyReport> generateHierarchyReport(Team& team) const;
+struct TacticalEffectiveness {
+    int matchesPlayed = 0, wins = 0, draws = 0, losses = 0;
+    int goalsScored = 0, goalsConceded = 0;
+    int setPieceGoals = 0;
+    double pressSuccess = 0.0;  // interceptions in opponent half per match
+};
 
-        // 4. Scouting & Market
-        std::vector<PlayerPtr> generateWatchlistReport(WorldData& worldData) const;
-        
-        void resetSeasonalData();
-    };
+// ========== SCOUT REPORT ==========
+struct ScoutReportCard {
+    std::string playerId;
+    std::string name;
+    int estimatedOverall = 0;
+    int estimatedPotential = 0;
+    std::string playstyle;
+    std::vector<std::string> knownTraits;
+    std::map<std::string, std::pair<int,int>> attributeRanges; // min-max
+    int64_t estimatedValue = 0;
+    int estimatedWage = 0;
+    int contractMonthsLeft = 0;
+    double recentAvgRating = 0.0;
+    std::string scoutVerdict;   // "Strongly Recommend" etc.
+};
 
-} // namespace FootballManager
+struct PlayerComparison {
+    std::string ownPlayerName, scoutedPlayerName;
+    std::map<std::string, std::pair<int,int>> attributeComparison; // own vs scout
+    std::map<std::string, std::pair<double,double>> statComparison;
+};
+
+// ========== MATCH DATA STORAGE ==========
+struct MatchDataEntry {
+    std::string date;
+    std::string competition;
+    std::string homeTeam, awayTeam;
+    int homeGoals, awayGoals;
+    std::map<std::string, PlayerMatchStats> playerStats;   // all players involved
+    std::vector<MatchEvent> events;
+};
+
+class DataHub {
+private:
+    std::string m_managedClubName;
+    std::vector<MatchDataEntry> m_allMatches;               // current season only
+
+    // Cached analysis (recomputed when data changes)
+    std::map<std::string, OpponentReport> m_opponentCache;
+    std::vector<SquadOverviewEntry> m_squadOverviewCache;
+    std::vector<PositionalAnalysis> m_positionalCache;
+    TacticalEffectiveness m_tacticalCache;
+    std::vector<ScoutReportCard> m_scoutReports;
+
+    bool m_cacheDirty = true;
+
+    void recomputeCaches();
+
+public:
+    DataHub() = default;
+
+    // ========== INGESTION ==========
+    void ingestMatch(const Fixture& fix, const MatchResult& res);
+    void setManagedClub(const std::string& name) { m_managedClubName = name; }
+
+    // ========== OPPONENT ANALYSIS ==========
+    OpponentReport getOpponentReport(const std::string& opponentTeamName);
+    OpponentStyleProfile computeTeamStyle(const std::string& teamName) const;
+
+    // ========== OWN TEAM ANALYSIS ==========
+    std::vector<SquadOverviewEntry> getSquadOverview();
+    std::vector<PositionalAnalysis> getPositionalAnalysis();
+    TacticalEffectiveness getTacticalEffectiveness();
+
+    // ========== SCOUT REPORTS ==========
+    void addScoutReport(const ScoutReportCard& report);
+    std::vector<ScoutReportCard> getScoutReports() const;
+    PlayerComparison compareWithScouted(const std::string& scoutedPlayerId,
+                                        const PlayerPtr& ownPlayer) const;
+
+    // ========== SEASON LIFECYCLE ==========
+    void resetSeason();
+    json toJson() const;
+    void fromJson(const json& j);
+};

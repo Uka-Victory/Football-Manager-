@@ -1,46 +1,87 @@
+// League.hpp
 #pragma once
-#include "Team.hpp"
-#include <vector>
 #include <string>
+#include <vector>
+#include <map>
 #include <memory>
-#include <unordered_map>
-#include <utility>
+#include "Team.hpp"
 
-namespace FootballManager {
+using json = nlohmann::json;
 
-    struct Fixture {
-        std::shared_ptr<Team> homeTeam;
-        std::shared_ptr<Team> awayTeam;
-        bool isPlayed;
-        int  homeScore;
-        int  awayScore;
-    };
+// ========== FIXTURE ==========
+struct Fixture {
+    std::string date;           // "YYYY-MM-DD"
+    TeamPtr homeTeam;
+    TeamPtr awayTeam;
+    int homeGoals = -1;         // -1 = not played
+    int awayGoals = -1;
+    bool played = false;
+};
 
-    class League {
-    private:
-        std::string leagueName;
-        std::vector<std::shared_ptr<Team>> teams;
-        std::vector<Fixture> schedule;
+// ========== LEAGUE CLASS ==========
+class League {
+private:
+    std::string m_name;
+    std::string m_country;
+    int m_tier = 1;                        // 1 = top division
+    int m_roundsPerOpponent = 2;           // 2 = home & away
+    int m_promotionSpots = 3;
+    int m_relegationSpots = 3;
 
-        std::unordered_map<std::string, int> points;
-        std::unordered_map<std::string, int> goalDifference;
+    std::vector<TeamPtr> m_teams;
+    std::map<std::string, std::vector<Fixture>> m_fixtures;   // date -> matches
 
-    public:
-        League(const std::string& name);
+    // Season tracking
+    int m_seasonYear = 2025;
+    bool m_seasonComplete = false;
 
-        void addTeam(std::shared_ptr<Team> team);
-        std::shared_ptr<Team> getTeamByName(const std::string& name) const;
+public:
+    League() = default;
+    League(const std::string& name, const std::string& country, int tier);
 
-        void generateRoundRobinSchedule();
-        void recordMatchResult(std::shared_ptr<Team> home, std::shared_ptr<Team> away,
-                               int homeGoals, int awayGoals);
+    // ========== BASIC GETTERS ==========
+    const std::string& getName() const { return m_name; }
+    const std::string& getCountry() const { return m_country; }
+    int getTier() const { return m_tier; }
+    int getSeasonYear() const { return m_seasonYear; }
+    bool isSeasonComplete() const { return m_seasonComplete; }
+    const std::vector<TeamPtr>& getTeams() const { return m_teams; }
+    const std::map<std::string, std::vector<Fixture>>& getFixtures() const { return m_fixtures; }
+    void setPromotionSpots(int n) { m_promotionSpots = n; }
+    void setRelegationSpots(int n) { m_relegationSpots = n; }
+    int getPromotionSpots() const { return m_promotionSpots; }
+    int getRelegationSpots() const { return m_relegationSpots; }
 
-        // Fix: Returns the next unplayed fixture so the game loop always advances correctly
-        std::pair<std::shared_ptr<Team>, std::shared_ptr<Team>> getNextFixture() const;
+    // ========== TEAM MANAGEMENT ==========
+    void addTeam(const TeamPtr& team);
+    void removeTeam(const TeamPtr& team);
 
-        std::vector<std::shared_ptr<Team>> getSortedTable() const;
-        void printTable() const;
-        bool isSeasonComplete() const;
-    };
+    // ========== FIXTURE GENERATION ==========
+    void generateSchedule(const std::string& startDate);
+    void generateSchedule(int year, int month, int day);
 
-} // namespace FootballManager
+    // ========== MATCH DAY PROCESSING ==========
+    std::vector<Fixture> getFixturesForDate(const std::string& date) const;
+    void recordMatchResult(const std::string& date, const Fixture& result);
+    std::vector<Fixture> getAllUnplayedFixtures() const;
+    void markSeasonComplete();
+
+    // ========== LEAGUE TABLE ==========
+    std::vector<TeamPtr> getSortedTable() const;
+    void printTable() const;
+
+    // ========== END‑OF‑SEASON ==========
+    void endSeason(League* lowerLeague = nullptr);
+    void resetAllTeamRecords();
+
+    // ========== DATE HELPERS ==========
+    static std::string addDays(const std::string& date, int days);
+    static int daysBetween(const std::string& d1, const std::string& d2);
+
+    // ========== SERIALISATION ==========
+    json toJson() const;
+    static std::shared_ptr<League> fromJson(const json& j,
+        const std::map<std::string, TeamPtr>& teamRegistry);
+};
+
+using LeaguePtr = std::shared_ptr<League>;

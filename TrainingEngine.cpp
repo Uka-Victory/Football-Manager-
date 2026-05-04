@@ -1,19 +1,12 @@
+// TrainingEngine.cpp
 #include "TrainingEngine.hpp"
-#include <algorithm>
+#include "Utils.hpp"
 
-namespace FootballManager {
-
-    void TrainingEngine::processDailyTraining(std::shared_ptr<Team> team) {
-        if (!team) return;
-
-        auto roster = team->getSeniorSquad();
-        for (auto& player : roster) {
-            // Restore fitness daily based on 1-100 scale, completely avoiding phantom 'injured' vars
-            int currentFitness = player->getFitness();
-            if (currentFitness < 100) {
-                player->setFitness(std::min(100, currentFitness + 5));
-            }
-        }
+void TrainingEngine::processDailyTraining(const TeamPtr& team) {
+    for (auto& p : team->getSeniorSquad()) {
+        if (p->isAvailable()) p->recoverFitness(5 + team->getFacilities().training * 2);
     }
-
-} // namespace FootballManager
+    for (auto& p : team->getYouthSquad()) {
+        if (p->isAvailable()) p->recoverFitness(5 + team->getFacilities().training * 2);
+    }
+}

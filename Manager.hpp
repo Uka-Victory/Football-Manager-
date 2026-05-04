@@ -1,35 +1,21 @@
-#ifndef MANAGER_HPP
-#define MANAGER_HPP
-
+// Manager.hpp
+#pragma once
 #include <string>
 #include <vector>
-#include <memory>
 #include "json.hpp"
+using json = nlohmann::json;
 
 class Manager {
 public:
+    Manager(const std::string& n = "", int a = 40, int rep = 50);
+    void setCurrentClubName(const std::string& name);
+    std::string getCurrentClubName() const;
+    json toJson() const;
+    void fromJson(const json& j);
+private:
     std::string name;
-    int age = 40;
-    int reputation = 10;   // 1-20 scale
-    
-    int wins = 0;
-    int draws = 0;
-    int losses = 0;
-    int trophiesWon = 0;
-    
-    std::string currentClubName;
+    int age, reputation;
+    std::string currentClub;
+    int wins = 0, draws = 0, losses = 0;
     std::vector<std::string> trophyList;
-
-    Manager() = default;
-    Manager(const std::string& n, int a, int rep);
-
-    void recordMatch(bool isWin, bool isDraw);
-    void addTrophy(const std::string& trophyName);
-
-    nlohmann::json toJson() const;
-    void fromJson(const nlohmann::json& j);
 };
-
-using ManagerPtr = std::shared_ptr<Manager>;
-
-#endif

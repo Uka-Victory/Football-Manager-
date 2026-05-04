@@ -1,17 +1,14 @@
+// NamePool.hpp
 #pragma once
-#include "Team.hpp"
-#include <memory>
+#include <string>
+#include <vector>
 
-namespace FootballManager {
-
-    struct MatchResult {
-        int homeGoals;
-        int awayGoals;
-    };
-
-    class MatchEngine {
-    public:
-        static MatchResult simulateMatch(std::shared_ptr<Team> homeTeam, std::shared_ptr<Team> awayTeam, bool isBigGame = false);
-    };
-
-} // namespace FootballManager
+class NamePool {
+public:
+    bool load(const std::string& filename);
+    std::string generateName(const std::string& country) const;
+    std::string generateFirstName(const std::string& country) const;
+    std::string generateLastName(const std::string& country) const;
+private:
+    std::vector<std::string> firstNames, lastNames;
+};
