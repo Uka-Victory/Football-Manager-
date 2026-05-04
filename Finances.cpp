@@ -93,7 +93,6 @@ void Finances::makeLoanRepayment(int64_t amount) {
 }
 
 void Finances::recomputeBudgets() {
-    // very simple: keep transfer budget at 40% of balance, wage budget at 50% of revenue estimate
     int64_t estimatedRevenue = m_matchdayIncome + m_broadcastingRevenue + m_commercialRevenue;
     m_wageBudget = std::max(0LL, estimatedRevenue / 52);
     m_transferBudget = std::max(0LL, m_totalBalance * 40 / 100);
@@ -104,7 +103,7 @@ void Finances::updateFFP(int64_t seasonProfitLoss) {
         m_ffpAccumulatedDeficit += -seasonProfitLoss;
     else
         m_ffpAccumulatedDeficit = std::max(0, m_ffpAccumulatedDeficit - static_cast<int>(seasonProfitLoss));
-    if (m_ffpAccumulatedDeficit > 100'000'000)  // £100m over 3 years
+    if (m_ffpAccumulatedDeficit > 100'000'000)
         m_underTransferEmbargo = true;
 }
 

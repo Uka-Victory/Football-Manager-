@@ -1,37 +1,35 @@
+// WorldData.hpp
 #pragma once
-#include "Player.hpp"
-#include "Team.hpp"
-#include <vector>
 #include <string>
-#include <memory>
-#include <map>
+#include <vector>
+#include "json.hpp"
+using json = nlohmann::json;
 
-namespace FootballManager {
+struct TeamInfo {
+    std::string name;
+    int level;
+    int seniorCount, youthCount;
+    std::string country;
+    std::string primaryColour, secondaryColour, stadium;
+    int founded;
+};
 
-    class WorldData {
-    private:
-        std::vector<PlayerPtr> freeAgentPool;
-        std::vector<std::string> scoutWatchlist; // Stores Player IDs
-        std::map<std::string, PlayerPtr> globalPlayerRegistry; // Master map of all active players
+struct LeagueInfo {
+    std::string name;
+    int tier, level;
+    int roundsPerOpponent, promotionSpots, relegationSpots;
+    std::vector<TeamInfo> teams;
+};
 
-    public:
-        WorldData();
+struct CountryInfo {
+    std::string name;
+    std::vector<LeagueInfo> leagues;
+};
 
-        // Registry & Market
-        void registerPlayer(PlayerPtr player);
-        void addFreeAgent(PlayerPtr player);
-        void removeFreeAgent(const std::string& playerId);
-        PlayerPtr findPlayerGlobally(const std::string& playerId) const;
-        std::vector<PlayerPtr> getFreeAgents() const { return freeAgentPool; }
-
-        // Watchlist
-        void addToWatchlist(const std::string& playerId);
-        void removeFromWatchlist(const std::string& playerId);
-        std::vector<std::string> getWatchlist() const { return scoutWatchlist; }
-
-        // Temporal Engine Triggers
-        void processAprilFirstGraduation(std::vector<std::shared_ptr<Team>>& allWorldTeams, int currentYear);
-        void processJuneThirtiethMidnightWipe();
-    };
-
-} // namespace FootballManager
+class WorldData {
+public:
+    bool load(const std::string& filename);
+    const std::vector<CountryInfo>& getBaseCountries() const;
+private:
+    std::vector<CountryInfo> m_countries;
+};
