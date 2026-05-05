@@ -95,7 +95,6 @@ int main() {
 void generateWorld() {
     worldData.load("world_data.json");
     namePool.load("countries_data.txt");
-    teamGenerator = TeamGenerator(namePool);
 
     // Collect all country names for national teams
     vector<string> allCountryNames;

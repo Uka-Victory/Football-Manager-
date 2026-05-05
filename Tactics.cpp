@@ -38,15 +38,15 @@ std::vector<Formation> TeamTactics::getPredefinedFormations() {
     std::vector<Playstyle> cmRoles = {Playstyle::DeepLyingPlaymaker, Playstyle::BoxToBox,
                                        Playstyle::AdvancedPlaymaker, Playstyle::AnchorMan};
     // LM/RM allowed roles
-    std::vector<Playstyle> wmRoles = {Playstyle::Winger, Playstyle::InsideForward,
+    std::vector<Playstyle> wmRoles = {Playstyle::InsideForward, Playstyle::InsideForward, Playstyle::WideWinger, 
                                        Playstyle::Raumdeuter, Playstyle::AdvancedPlaymaker};
     // AM allowed roles
     std::vector<Playstyle> amRoles = {Playstyle::AdvancedPlaymaker, Playstyle::False9,
                                        Playstyle::InsideForward, Playstyle::Raumdeuter,
                                        Playstyle::DeepLyingForward};
     // LW/RW allowed roles
-    std::vector<Playstyle> wingRoles = {Playstyle::Winger, Playstyle::InsideForward,
-                                         Playstyle::Raumdeuter, Playstyle::False9};
+    std::vector<Playstyle> wingRoles = {Playstyle::InsideForward, Playstyle::WideWinger, 
+                                   Playstyle::Raumdeuter, Playstyle::False9};
     // ST allowed roles
     std::vector<Playstyle> stRoles = {Playstyle::TargetMan, Playstyle::Poacher,
                                        Playstyle::False9, Playstyle::DeepLyingForward,

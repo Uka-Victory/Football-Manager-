@@ -10,11 +10,14 @@ using json = nlohmann::json;
 
 // ========== FORMATION SLOT ==========
 struct FormationSlot {
-    std::string positionGroup;          // "GK","CB","LB","RB","DM","CM","LM","RM","AM","LW","RW","ST"
-    std::vector<Playstyle> allowedRoles; // suitable playstyles for this slot
-    Playstyle defaultRole;              // the role the AI / auto‑select uses
-};
+    std::string positionGroup;
+    std::vector<Playstyle> allowedRoles;
+    Playstyle defaultRole;
 
+    FormationSlot() = default;
+    FormationSlot(const std::string& pos, const std::vector<Playstyle>& roles, Playstyle defRole)
+        : positionGroup(pos), allowedRoles(roles), defaultRole(defRole) {}
+};
 // ========== FORMATION ==========
 struct Formation {
     std::string name;                   // "4‑3‑3", "4‑4‑2", etc.
@@ -36,7 +39,7 @@ struct TeamInstructions {
     int pressingIntensity = 30;        // 0‑100
     DefensiveLine defensiveLine = DefensiveLine::Normal;
     Width width = Width::Normal;
-    CreativeFreedom creativeFreedom = CreativeFreedom::Balanced;
+    CreativeFreedom creativeFreedom = CreativeFreedom::Disciplined;
 };
 
 // ========== SET‑PIECE ROUTINES ==========

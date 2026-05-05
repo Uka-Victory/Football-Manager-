@@ -135,7 +135,7 @@ void Editor::editClubLevel(TeamPtr& t, int level) {
 void Editor::editClubReputation(TeamPtr& t, int rep) { if (t && isEnabled) t->setReputation(rep); }
 void Editor::editClubFinances(TeamPtr& t, int64_t balance) { /* placeholder until Finance class exists */ }
 void Editor::editFacility(TeamPtr& t, int facilityIndex, int level) {}
-void Editor::moveClubToLeague(TeamPtr& t, LeaguePtr& from, LeaguePtr& to) {}
+void Editor::moveClubToLeague(TeamPtr& t, std::shared_ptr<League>& from, std::shared_ptr<League>& to) {}
 
 void Editor::healAllPlayers(const std::vector<PlayerPtr>& players) {
     for (auto& p : players) healPlayer(const_cast<PlayerPtr&>(p));

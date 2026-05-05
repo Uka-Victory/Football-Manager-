@@ -18,4 +18,5 @@ private:
     std::string currentClub;
     int wins = 0, draws = 0, losses = 0;
     std::vector<std::string> trophyList;
+    using ManagerPtr = std::shared_ptr<Manager>;
 };

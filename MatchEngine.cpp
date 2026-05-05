@@ -316,6 +316,13 @@ void MatchEngine::simulatePossession(const std::vector<PlayerPtr>& attackXI,
             action = SHOOT;
         if (attacker->hasTrait(Trait::TriesKillerBalls) && ballCol >= 6)
             action = PASS;
+            // WideWinger prefers crosses over shots or dribbles
+        if (attacker->getPlaystyle() == Playstyle::WideWinger && ballCol >= 7 && ballCol < 10) {
+        if (action == SHOOT && Utils::randInt(1,100) <= 40)
+        action = CROSS;
+        if (action == DRIBBLE && Utils::randInt(1,100) <= 30)
+        action = CROSS;
+}
 
         switch (action) {
             case PASS: {
@@ -428,6 +435,8 @@ void MatchEngine::simulatePossession(const std::vector<PlayerPtr>& attackXI,
                 double crossRating = attacker->getCrossing() * 0.5 + attacker->getPassing() * 0.3 +
                                      attacker->getVision() * 0.2;
                 if (attacker->hasTrait(Trait::CurlsBall)) crossRating *= 1.08;
+                if (attacker->getPlaystyle() == Playstyle::WideWinger)
+    crossRating *= 1.10;   // +10% cross accuracy for touchline huggers
 
                 bool crossed = false;
                 for (auto& recv : attackXI) {

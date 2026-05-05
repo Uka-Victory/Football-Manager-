@@ -189,6 +189,7 @@ void Player::generatePlaystyle() {
     } else if (pos == "LW" || pos == "RW") {
         weights[Playstyle::InsideForward]          = 30;
         weights[Playstyle::Raumdeuter]             = 25;
+        weights[Playstyle::WideWinger]             = 30; 
         weights[Playstyle::AdvancedPlaymaker]      = 15;
         weights[Playstyle::False9]                 = 15;
         weights[Playstyle::DeepLyingForward]       = 10;

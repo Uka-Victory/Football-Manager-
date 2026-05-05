@@ -42,11 +42,16 @@ public:
 
     // ========== COMPETITION SETUP ==========
     void setupChampionsLeague(const std::vector<std::string>& qualifiedClubs,
-                              GameCalendar& calendar);
-    void setupEuropaLeague(const std::vector<std::string>& qualifiedClubs,
+                          const std::map<std::string, std::shared_ptr<Team>>& teamMap,
+                          GameCalendar& calendar);
+
+void setupEuropaLeague(const std::vector<std::string>& qualifiedClubs,
+                       const std::map<std::string, std::shared_ptr<Team>>& teamMap,
+                       GameCalendar& calendar);
+
+void setupConferenceLeague(const std::vector<std::string>& qualifiedClubs,
+                           const std::map<std::string, std::shared_ptr<Team>>& teamMap,
                            GameCalendar& calendar);
-    void setupConferenceLeague(const std::vector<std::string>& qualifiedClubs,
-                               GameCalendar& calendar);
 
     // ========== ACCESSORS ==========
     const std::map<std::string, CountryCoefficient>& getCountryCoefficients() const;

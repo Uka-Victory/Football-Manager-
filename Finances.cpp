@@ -94,8 +94,8 @@ void Finances::makeLoanRepayment(int64_t amount) {
 
 void Finances::recomputeBudgets() {
     int64_t estimatedRevenue = m_matchdayIncome + m_broadcastingRevenue + m_commercialRevenue;
-    m_wageBudget = std::max(0LL, estimatedRevenue / 52);
-    m_transferBudget = std::max(0LL, m_totalBalance * 40 / 100);
+    m_wageBudget = std::max(int64_t(0), estimatedRevenue / 52);
+    m_transferBudget = std::max(int64_t(0), m_totalBalance * 40 / 100);
 }
 
 void Finances::updateFFP(int64_t seasonProfitLoss) {

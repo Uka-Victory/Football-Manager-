@@ -5,6 +5,7 @@
 #include <memory>
 #include "Player.hpp"
 #include "Team.hpp"
+#include "League.hpp"
 
 class Editor {
 public:
@@ -28,7 +29,7 @@ public:
     static void editClubReputation(TeamPtr& t, int rep);
     static void editClubFinances(TeamPtr& t, int64_t balance);
     static void editFacility(TeamPtr& t, int facilityIndex, int level);
-    static void moveClubToLeague(TeamPtr& t, LeaguePtr& from, LeaguePtr& to);
+    static void moveClubToLeague(TeamPtr& t, std::shared_ptr<League>& from, std::shared_ptr<League>& to);
 
     // Mass operations
     static void healAllPlayers(const std::vector<PlayerPtr>& players);

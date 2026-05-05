@@ -18,6 +18,7 @@ enum class Playstyle {
     False9,                // ST/AM
     InsideForward,         // LW/RW/AM
     Raumdeuter,            // LW/RW/AM
+    WideWinger,            // LW/RW
     AdvancedPlaymaker,     // AM/CM
     DeepLyingForward,      // ST/AM
     DefensiveFullBack,     // LB/RB
@@ -71,6 +72,7 @@ enum class PositionGroup {
 // ========== PLAYER CLASS ==========
 class Player {
 private:
+    friend struct nlohmann::adl_serializer<Player>;
     std::string m_uniqueId;
     std::string m_name;
     int m_age = 0;
@@ -173,6 +175,7 @@ public:
     int getInjuryProneness() const { return m_injuryProneness; }
     int getVersatility()     const { return m_versatility; }
     int getPotentialCeiling() const { return m_potentialCeiling; }
+    void setPotentialCeiling(int v) { m_potentialCeiling = std::max(1, std::min(20, v)); }
 
     Playstyle getPlaystyle() const { return m_playstyle; }
     const std::vector<Trait>& getTraits() const { return m_traits; }
@@ -206,6 +209,7 @@ public:
     int getCareerApps()    const { return m_careerApps; }
     int getCareerGoals()   const { return m_careerGoals; }
     int getCareerAssists() const { return m_careerAssists; }
+    int getCareerCleanSheets() const { return m_careerCleanSheets; }
     double getCareerAvgRating() const { return m_careerAvgRating; }
     int getTrophiesWon()   const { return m_trophiesWon; }
 

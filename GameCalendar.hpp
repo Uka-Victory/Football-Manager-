@@ -16,5 +16,5 @@ public:
     void fromJson(const json& j);
 private:
     int year, month, day;
-    static const int daysInMonth(int m, int y);
+    static int daysInMonth(int m, int y);
 };
