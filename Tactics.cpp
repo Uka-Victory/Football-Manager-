@@ -65,7 +65,7 @@ std::vector<Formation> TeamTactics::getPredefinedFormations() {
             slot("LM", wmRoles, Playstyle::Winger),
             slot("CM", cmRoles, Playstyle::BoxToBox),
             slot("CM", cmRoles, Playstyle::DeepLyingPlaymaker),
-            slot("RM", wmRoles, Playstyle::Winger),
+            slot("RM", wmRoles, Playstyle::WideWinger),
             slot("ST", stRoles, Playstyle::TargetMan),
             slot("ST", stRoles, Playstyle::Poacher)
         };
@@ -87,7 +87,7 @@ std::vector<Formation> TeamTactics::getPredefinedFormations() {
             slot("CM", cmRoles, Playstyle::AdvancedPlaymaker),
             slot("LW", wingRoles, Playstyle::InsideForward),
             slot("ST", stRoles, Playstyle::Poacher),
-            slot("RW", wingRoles, Playstyle::Winger)
+            slot("RW", wingRoles, Playstyle::WideWinger)
         };
         formations.push_back(f);
     }
@@ -106,7 +106,7 @@ std::vector<Formation> TeamTactics::getPredefinedFormations() {
             slot("DM", dmRoles, Playstyle::DeepLyingPlaymaker),
             slot("LW", wingRoles, Playstyle::InsideForward),
             slot("AM", amRoles, Playstyle::AdvancedPlaymaker),
-            slot("RW", wingRoles, Playstyle::Winger),
+            slot("RW", wingRoles, Playstyle::WideWinger),
             slot("ST", stRoles, Playstyle::Poacher)
         };
         formations.push_back(f);
@@ -121,11 +121,11 @@ std::vector<Formation> TeamTactics::getPredefinedFormations() {
             slot("CB", cbRoles, Playstyle::Sweeper),
             slot("CB", cbRoles, Playstyle::Stopper),
             slot("CB", cbRoles, Playstyle::BallPlayingDefender),
-            slot("LM", wmRoles, Playstyle::Winger),
+            slot("LM", wmRoles, Playstyle::WideWinger),
             slot("CM", cmRoles, Playstyle::BoxToBox),
             slot("CM", cmRoles, Playstyle::DeepLyingPlaymaker),
             slot("CM", cmRoles, Playstyle::AdvancedPlaymaker),
-            slot("RM", wmRoles, Playstyle::Winger),
+            slot("RM", wmRoles, Playstyle::WideWinger),
             slot("ST", stRoles, Playstyle::TargetMan),
             slot("ST", stRoles, Playstyle::Poacher)
         };
@@ -141,10 +141,10 @@ std::vector<Formation> TeamTactics::getPredefinedFormations() {
             slot("CB", cbRoles, Playstyle::Stopper),
             slot("CB", cbRoles, Playstyle::Sweeper),
             slot("CB", cbRoles, Playstyle::BallPlayingDefender),
-            slot("LM", wmRoles, Playstyle::Winger),
+            slot("LM", wmRoles, Playstyle::WideWinger),
             slot("CM", cmRoles, Playstyle::BoxToBox),
             slot("CM", cmRoles, Playstyle::DeepLyingPlaymaker),
-            slot("RM", wmRoles, Playstyle::Winger),
+            slot("RM", wmRoles, Playstyle::WideWinger),
             slot("LW", wingRoles, Playstyle::InsideForward),
             slot("ST", stRoles, Playstyle::TargetMan),
             slot("RW", wingRoles, Playstyle::InsideForward)

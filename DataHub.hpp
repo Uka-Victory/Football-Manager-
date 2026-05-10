@@ -8,6 +8,7 @@
 #include "Team.hpp"
 #include "League.hpp"
 #include "MatchEngine.hpp"
+#include <unordered_map>
 
 // ========== OPPONENT REPORT ==========
 struct OpponentStyleProfile {
@@ -95,7 +96,7 @@ struct MatchDataEntry {
     std::string competition;
     std::string homeTeam, awayTeam;
     int homeGoals, awayGoals;
-    std::map<std::string, PlayerMatchStats> playerStats;   // all players involved
+    std::unordered_map<std::string, PlayerMatchStats> playerStats;   // all players involved
     std::vector<MatchEvent> events;
 };
 

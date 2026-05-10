@@ -1,6 +1,7 @@
 // Facilities.hpp
 #pragma once
 #include "json.hpp"
+using json = nlohmann::json;
 struct Facilities {
     int training = 1;
     int academy = 1;

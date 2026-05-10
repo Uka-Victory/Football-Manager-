@@ -442,10 +442,10 @@ void Team::updateHeadToHead(const std::string& opponentName,
         stats.appearances++;
         // goals/assists are handled separately via match events (MatchEngine calls
         // a dedicated method or the caller passes them). For now, just appearance + rating.
-        auto rit = playerRatings.find(p->getUniqueId());
-        if (rit != playerRatings.end()) {
-            stats.totalRating += rit->second;
-        }
+        auto rit = playerMatchStats.find(p->getUniqueId());
+        if (rit != playerMatchStats.end()) {
+           stats.totalRating += rit->second.matchRating;
+       }
     }
 }
 

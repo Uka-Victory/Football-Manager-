@@ -2,12 +2,12 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "MatchEngine.hpp"
 #include <memory>
 #include <map>
 #include "Player.hpp"
 #include "Facilities.hpp"
 #include "json.hpp"
-
 using json = nlohmann::json;
 
 // ========== DEPTH CHART ENTRY ==========
@@ -155,6 +155,9 @@ public:
     const std::vector<PlayerPtr>& getSeniorSquad() const { return m_seniorSquad; }
     const std::vector<PlayerPtr>& getYouthSquad()   const { return m_youthSquad; }
     const std::vector<PlayerPtr>& getAcademy()      const { return m_academy; }
+    std::vector<PlayerPtr>& getSeniorSquad() { return m_seniorSquad; }
+    std::vector<PlayerPtr>& getYouthSquad()   { return m_youthSquad; }
+    std::vector<PlayerPtr>& getAcademy()      { return m_academy; }
 
     // ========== SQUAD MANAGEMENT ==========
     void addToSenior(const PlayerPtr& p);
@@ -237,7 +240,7 @@ public:
     HeadToHeadRecord getHeadToHead(const std::string& opponentName) const;
     void updateHeadToHead(const std::string& opponentName, int ourGoals, int opponentGoals,
                           const std::vector<PlayerPtr>& ourPlayers,
-                          const std::map<std::string, double>& playerRatings);
+                          const std::unordered_map<std::string, PlayerMatchStats>& stats;
 
     // ========== RIVALS ==========
     void addRival(const std::string& clubName) { m_rivalClubNames.push_back(clubName); }

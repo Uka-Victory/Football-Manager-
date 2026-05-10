@@ -312,7 +312,7 @@ void MatchEngine::simulatePossession(const std::vector<PlayerPtr>& attackXI,
             else action = PASS;
         }
 
-        if (attacker->hasTrait(Trait::ShootsFromDistance) && ballCol >= 7 && ballCol < 9)
+        if (attacker->hasTrait(Trait::LongShotTaker) && ballCol >= 7 && ballCol < 9)
             action = SHOOT;
         if (attacker->hasTrait(Trait::TriesKillerBalls) && ballCol >= 6)
             action = PASS;

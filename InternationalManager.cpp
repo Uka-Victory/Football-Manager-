@@ -485,19 +485,16 @@ void InternationalManager::setupTournament(
     std::shuffle(shuffled.begin(), shuffled.end(), Utils::getRng());
 
     std::map<std::string, std::string> countryGroup;
-    char groupChar = 'A';
-    for (size_t g = 0; g < numGroups; ++g) {
-        std::string groupName(1, groupChar + g);
-            char groupChar = 'A';
-    for (size_t g = 0; g < numGroups; ++g) {
-        std::string groupName(1, groupChar + g);
-        for (size_t i = 0; i < 4; ++i) {
-            std::string country = shuffled[g * 4 + i];
-            countryGroup[country] = groupName;
-            m_groupPoints[tournament][country] = 0;
-            m_groupGoalDiff[tournament][country] = 0;
-        }
+char groupChar = 'A';
+for (size_t g = 0; g < numGroups; ++g) {
+    std::string groupName(1, groupChar + g);
+    for (size_t i = 0; i < 4; ++i) {
+        std::string country = shuffled[g * 4 + i];
+        countryGroup[country] = groupName;
+        m_groupPoints[tournament][country] = 0;
+        m_groupGoalDiff[tournament][country] = 0;
     }
+}
 
     std::string matchDate = std::to_string(calendar.getYear()) + "-06-14";
     std::vector<TournamentFixture> groupFixtures;

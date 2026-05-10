@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <set>
+#include "Utils.hpp"
 
 // ========== INGESTION ==========
 void DataHub::ingestMatch(const Fixture& fix, const MatchResult& res) {
