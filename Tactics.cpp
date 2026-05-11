@@ -62,7 +62,7 @@ std::vector<Formation> TeamTactics::getPredefinedFormations() {
             slot("CB", cbRoles, Playstyle::Stopper),
             slot("CB", cbRoles, Playstyle::BallPlayingDefender),
             slot("RB", fbRoles, Playstyle::DefensiveFullBack),
-            slot("LM", wmRoles, Playstyle::Winger),
+            slot("LM", wmRoles, Playstyle::WideWinger),
             slot("CM", cmRoles, Playstyle::BoxToBox),
             slot("CM", cmRoles, Playstyle::DeepLyingPlaymaker),
             slot("RM", wmRoles, Playstyle::WideWinger),

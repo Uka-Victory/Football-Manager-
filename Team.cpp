@@ -415,16 +415,15 @@ HeadToHeadRecord Team::getHeadToHead(const std::string& opponentName) const {
 void Team::updateHeadToHead(const std::string& opponentName,
                             int ourGoals, int opponentGoals,
                             const std::vector<PlayerPtr>& ourPlayers,
-                            const std::map<std::string, double>& playerRatings) {
+                            const std::unordered_map<std::string, PlayerMatchStats>& matchStats) {
     auto& rec = m_headToHead[opponentName];
 
-    // Update overall record
     if (ourGoals > opponentGoals)       rec.wins++;
     else if (ourGoals == opponentGoals) rec.draws++;
     else                                rec.losses++;
 
-    rec.goalsFor += ourGoals;
-    rec.goalsAgainst += opponentGoals;
+    rec.goalsFor      += ourGoals;
+    rec.goalsAgainst  += opponentGoals;
 
     int margin = ourGoals - opponentGoals;
     if (margin > 0 && margin > rec.biggestWinMargin)
@@ -432,20 +431,17 @@ void Team::updateHeadToHead(const std::string& opponentName,
     if (margin < 0 && (-margin) > rec.biggestDefeatMargin)
         rec.biggestDefeatMargin = -margin;
 
-    // Dates (will be set externally from calendar; placeholder)
-    // rec.firstMeetingDate / lastMeetingDate should be set by caller
+    for (const auto& p : ourPlayers) {
+        auto& pRec = rec.playerStats[p->getUniqueId()];
+        pRec.playerId = p->getUniqueId();
+        pRec.appearances++;
 
-    // Update per‑player stats
-    for (auto& p : ourPlayers) {
-        auto& stats = rec.playerStats[p->getUniqueId()];
-        stats.playerId = p->getUniqueId();
-        stats.appearances++;
-        // goals/assists are handled separately via match events (MatchEngine calls
-        // a dedicated method or the caller passes them). For now, just appearance + rating.
-        auto rit = playerMatchStats.find(p->getUniqueId());
-        if (rit != playerMatchStats.end()) {
-           stats.totalRating += rit->second.matchRating;
-       }
+        auto it = matchStats.find(p->getUniqueId());
+        if (it != matchStats.end()) {
+            pRec.goals   += it->second.goals;
+            pRec.assists += it->second.assists;
+            pRec.totalRating += it->second.matchRating;
+        }
     }
 }
 

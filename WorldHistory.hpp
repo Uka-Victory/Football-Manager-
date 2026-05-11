@@ -81,5 +81,6 @@ public:
     void fromJson(const json& j);
     void saveToFile(const std::string& filename) const;
     void loadFromFile(const std::string& filename);
-    using WorldHistoryPtr = std::shared_ptr<WorldHistory>;
 };
+
+using WorldHistoryPtr = std::shared_ptr<WorldHistory>;

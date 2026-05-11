@@ -9,7 +9,9 @@ public:
     GameCalendar(int y = 2025, int m = 7, int d = 1);
     void advanceOneDay();
     std::string getDateString() const;
-    int getYear() const;
+    int getYear()    const;
+    int getMonth()   const;
+    int getDay()     const;
     int getWeekday() const; // 0=Sunday
     bool isSeasonEnd() const; // June 30
     json toJson() const;

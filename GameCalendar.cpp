@@ -18,7 +18,9 @@ std::string GameCalendar::getDateString() const {
     return oss.str();
 }
 
-int GameCalendar::getYear() const { return year; }
+int GameCalendar::getYear()  const { return year; }
+int GameCalendar::getMonth() const { return month; }
+int GameCalendar::getDay()   const { return day; }
 
 int GameCalendar::getWeekday() const {
     // Simple Zeller-like algorithm for 2025-01-01 = Wednesday (3)

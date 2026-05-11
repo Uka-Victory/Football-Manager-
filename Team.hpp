@@ -2,12 +2,14 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "MatchEngine.hpp"
 #include <memory>
 #include <map>
+#include <unordered_map>
 #include "Player.hpp"
 #include "Facilities.hpp"
+#include "MatchStats.hpp"
 #include "json.hpp"
+
 using json = nlohmann::json;
 
 // ========== DEPTH CHART ENTRY ==========
@@ -240,7 +242,7 @@ public:
     HeadToHeadRecord getHeadToHead(const std::string& opponentName) const;
     void updateHeadToHead(const std::string& opponentName, int ourGoals, int opponentGoals,
                           const std::vector<PlayerPtr>& ourPlayers,
-                          const std::unordered_map<std::string, PlayerMatchStats>& stats;
+                          const std::unordered_map<std::string, PlayerMatchStats>& stats);
 
     // ========== RIVALS ==========
     void addRival(const std::string& clubName) { m_rivalClubNames.push_back(clubName); }

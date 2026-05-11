@@ -312,17 +312,48 @@ void MatchEngine::simulatePossession(const std::vector<PlayerPtr>& attackXI,
             else action = PASS;
         }
 
+        // ── Trait overrides ──────────────────────────────────────────────
         if (attacker->hasTrait(Trait::LongShotTaker) && ballCol >= 7 && ballCol < 9)
             action = SHOOT;
         if (attacker->hasTrait(Trait::TriesKillerBalls) && ballCol >= 6)
             action = PASS;
-            // WideWinger prefers crosses over shots or dribbles
-        if (attacker->getPlaystyle() == Playstyle::WideWinger && ballCol >= 7 && ballCol < 10) {
-        if (action == SHOOT && Utils::randInt(1,100) <= 40)
-        action = CROSS;
-        if (action == DRIBBLE && Utils::randInt(1,100) <= 30)
-        action = CROSS;
-}
+        if (attacker->hasTrait(Trait::EarlyCrosser) && ballCol >= 7 &&
+            (ballRow <= 1 || ballRow >= 6))
+            action = CROSS;
+        if (attacker->hasTrait(Trait::PlaysShortSimplePasses) && action == SHOOT && ballCol < 10)
+            action = PASS;
+
+        // ── Playstyle overrides ──────────────────────────────────────────
+        // WideWinger: prefer cross over shoot/dribble when wide in final third
+        if (attacker->getPlaystyle() == Playstyle::WideWinger &&
+            ballCol >= 7 && ballCol < 10) {
+            if (action == SHOOT  && Utils::randInt(1,100) <= 40) action = CROSS;
+            if (action == DRIBBLE && Utils::randInt(1,100) <= 30) action = CROSS;
+        }
+        // Poacher: always shoot inside the box
+        if (attacker->getPlaystyle() == Playstyle::Poacher && ballCol >= 10)
+            action = SHOOT;
+        // InsideForward: cut inside and shoot rather than cross
+        if (attacker->getPlaystyle() == Playstyle::InsideForward &&
+            action == CROSS && ballCol >= 9)
+            action = SHOOT;
+        // DeepLyingPlaymaker / AdvancedPlaymaker: avoid shooting from far
+        if ((attacker->getPlaystyle() == Playstyle::DeepLyingPlaymaker ||
+             attacker->getPlaystyle() == Playstyle::AdvancedPlaymaker) &&
+            action == SHOOT && ballCol < 10)
+            action = PASS;
+        // Raumdeuter: if in a high-value zone, always shoot
+        if (attacker->getPlaystyle() == Playstyle::Raumdeuter &&
+            ballCol >= 10 && (ballRow >= 3 && ballRow <= 5))
+            action = SHOOT;
+        // False9: drop deeper to receive and create
+        if (attacker->getPlaystyle() == Playstyle::False9 &&
+            action == SHOOT && ballCol == 10)
+            if (Utils::randInt(1,100) <= 35) action = PASS;
+        // TargetMan: head it / hold it up rather than dribble
+        if (attacker->getPlaystyle() == Playstyle::TargetMan &&
+            action == DRIBBLE && Utils::randInt(1,100) <= 60)
+            action = PASS;
 
         switch (action) {
             case PASS: {
@@ -397,15 +428,23 @@ void MatchEngine::simulatePossession(const std::vector<PlayerPtr>& attackXI,
 
                 double dribbleRating = attacker->getDribbling() * 0.4 + attacker->getPace() * 0.2 +
                                        attacker->getAgility() * 0.2 + attacker->getAcceleration() * 0.2;
-                if (attacker->getPlaystyle() == Playstyle::InsideForward)
-                    dribbleRating *= 1.10;
+                // Playstyle bonuses
+                if (attacker->getPlaystyle() == Playstyle::InsideForward)  dribbleRating *= 1.12;
+                if (attacker->getPlaystyle() == Playstyle::Raumdeuter)     dribbleRating *= 1.08;
+                if (attacker->getPlaystyle() == Playstyle::WideWinger)     dribbleRating *= 1.06;
+                // Trait bonuses
+                if (attacker->hasTrait(Trait::Flair))                      dribbleRating *= 1.10;
 
                 double defendRating = 0.0;
+                PlayerPtr tackler = nullptr;
                 for (auto& d : defendXI) {
-                    if (std::abs(getBaseColumn(d->getPrimaryPosition()) - ballCol) <= 1)
-                        defendRating += d->getTackling() + d->getPositioning();
+                    if (std::abs(getBaseColumn(d->getPrimaryPosition()) - ballCol) <= 1) {
+                        double dr = d->getTackling() + d->getPositioning();
+                        if (d->hasTrait(Trait::DivesIntoTackles)) dr *= 1.08;
+                        if (d->hasTrait(Trait::StaysOnFeet))      dr *= 0.90;
+                        if (dr > defendRating) { defendRating = dr; tackler = d; }
+                    }
                 }
-                defendRating /= std::max(1.0, (double)defendXI.size());
 
                 bool success = (dribbleRating + Utils::randInt(-5, 5)) > (defendRating * 0.8);
 
@@ -413,14 +452,22 @@ void MatchEngine::simulatePossession(const std::vector<PlayerPtr>& attackXI,
                     attStats.dribblesCompleted++;
                     int advance = 1 + (attacker->getPace() > 15 ? 1 : 0);
                     ballCol = std::min(11, ballCol + advance);
-                    if (advance >= 3) attStats.progressiveCarries++;
+                    if (advance >= 2) attStats.progressiveCarries++;
                 } else {
-                    for (auto& d : defendXI) {
-                        if (std::abs(getBaseColumn(d->getPrimaryPosition()) - ballCol) <= 1) {
-                            auto& defStats = res.playerStats[d->getUniqueId()];
-                            defStats.tacklesAttempted++;
-                            defStats.tacklesWon++;
-                            break;
+                    if (tackler) {
+                        auto& defStats = res.playerStats[tackler->getUniqueId()];
+                        defStats.tacklesAttempted++;
+                        defStats.tacklesWon++;
+                        // DivesIntoTackles may get a yellow card
+                        if (tackler->hasTrait(Trait::DivesIntoTackles) &&
+                            Utils::randInt(1,100) <= 20) {
+                            MatchEvent yel;
+                            yel.type = MatchEvent::YELLOW_CARD;
+                            yel.minute = Utils::randInt(1, 90);
+                            yel.playerId = tackler->getUniqueId();
+                            res.events.push_back(yel);
+                            defStats.yellowCards++;
+                            defStats.foulsCommitted++;
                         }
                     }
                     return;
@@ -471,8 +518,26 @@ void MatchEngine::simulatePossession(const std::vector<PlayerPtr>& attackXI,
 
                 double shotRating = attacker->getShooting() * 0.5 + attacker->getComposure() * 0.3 +
                                     attacker->getDecisions() * 0.2;
-                if (attacker->hasTrait(Trait::FinesseShot)) shotRating *= 1.10;
-                if (attacker->hasTrait(Trait::PowerShot)) shotRating *= 1.05;
+                // Playstyle modifiers
+                if (attacker->getPlaystyle() == Playstyle::Poacher)        shotRating *= 1.12;
+                if (attacker->getPlaystyle() == Playstyle::InsideForward)  shotRating *= 1.08;
+                if (attacker->getPlaystyle() == Playstyle::Raumdeuter)     shotRating *= 1.10;
+                if (attacker->getPlaystyle() == Playstyle::False9)         shotRating *= 0.92;
+                if (attacker->getPlaystyle() == Playstyle::TargetMan)
+                    shotRating = attacker->getHeading() * 0.5 + attacker->getStrength() * 0.3 +
+                                 attacker->getComposure() * 0.2;  // headers, not finesse
+                // Trait modifiers
+                if (attacker->hasTrait(Trait::FinesseShot))      shotRating *= 1.10;
+                if (attacker->hasTrait(Trait::PowerShot))        shotRating *= 1.05;
+                if (attacker->hasTrait(Trait::LongShotTaker) && ballCol < 10) shotRating *= 1.08;
+                if (attacker->hasTrait(Trait::Consistent))       shotRating *= 1.05;
+                if (attacker->hasTrait(Trait::Inconsistent)) {
+                    // Boom or bust — adds variance
+                    shotRating *= (Utils::randInt(1,100) <= 50 ? 1.15 : 0.85);
+                }
+                if (attacker->hasTrait(Trait::BigMatchPlayer))   shotRating *= 1.08;
+                if (attacker->hasTrait(Trait::PenaltySpecialist) &&
+                    ballCol == 11 && ballRow >= 3 && ballRow <= 4) shotRating *= 1.15;
 
                 double pressure = 0.0;
                 for (auto& d : defendXI)
